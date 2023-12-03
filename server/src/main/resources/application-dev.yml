@@ -1,0 +1,18 @@
+lcl:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: localhost
+    port: 3306
+    database: sky_take_out
+    username: root
+    password: "1412613528."
+  alioss:
+    bucket-name: xuan20235
+    access-key-id: LTAI5t7aBWbBp1Gm6hQ5wwt4
+    access-key-secret: tjIaJm39g0dPsY8Iei0pGuo6QnrL5Q
+    endpoint: oss-cn-beijing.aliyuncs.com
+  redis:
+    host: localhost
+    port: 6379
+    password: "1412613528."
+    database: 0
