@@ -2,7 +2,24 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lcl.mapper.SpaceMapper">
-
+    <update id="update">
+        update  space
+        <set>
+            <if test="updatedAt!=null">
+                    updated_at=#{updatedAt},
+            </if>
+            <if test="owner!=null">
+                    owner=#{owner},
+            </if>
+            <if test="isDeleted!=null">
+                is_deleted=#{isDeleted},
+            </if>
+            <if test="spaceName!=null">
+                space_name=#{spaceName}
+            </if>
+        </set>
+        where space_id=#{spaceId}
+    </update>
 
 
     <select id="getByIds" resultType="com.lcl.entity.Space">
@@ -10,6 +27,6 @@
         <foreach collection="ids" separator="," open="(" close=")" item="id">
             #{id}
         </foreach>
-
+        order by created_at desc
     </select>
 </mapper>

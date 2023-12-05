@@ -31,7 +31,7 @@ logging:
     org.springframework.jdbc.support.JdbcTransactionManager: debug
     com:
       lcl:
-        mapper: debug
+        mapper: DEBUG
         service: info
         controller: info
 
@@ -48,3 +48,6 @@ lcl:
     access-key-secret: ${lcl.alioss.access-key-secret}
     access-key-id: ${lcl.alioss.access-key-id}
     bucket-name: ${lcl.alioss.bucket-name}
+
+
+

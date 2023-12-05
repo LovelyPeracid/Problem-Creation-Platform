@@ -29,7 +29,7 @@ public class ExtUser  implements Serializable {
     private  String email;
 
     @TableField(value = "is_suspended")
-    private  boolean isSuspended;
+    private  Boolean isSuspended;
     @TableField("is_admin")
-    private  boolean isAdmin;
+    private  Boolean isAdmin;
 }

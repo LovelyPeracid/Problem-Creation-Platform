@@ -29,4 +29,6 @@ public interface SpaceMapper {
         +"values (#{spaceName},#{updatedAt},#{createdAt},#{isDeleted},#{owner},#{type})"
     )
     void save(Space space);
+    @AutoFill(OperationType.UPDATE)
+    void update(Space space);
 }
