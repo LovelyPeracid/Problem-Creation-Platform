@@ -1,5 +1,6 @@
 package com.lcl.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +14,13 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class UserLoginVO implements Serializable {
 
-    private Long id;
-    private String openid;
+    @ApiModelProperty("主键值")
+    private Long user_id;
+
+    @ApiModelProperty("用户名")
+    private String username;
+
+    @ApiModelProperty("jwt令牌")
     private String token;
 
 }
