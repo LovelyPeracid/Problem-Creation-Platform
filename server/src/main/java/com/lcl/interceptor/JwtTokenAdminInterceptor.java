@@ -1,6 +1,7 @@
 package com.lcl.interceptor;
 
 import com.lcl.constant.JwtClaimsConstant;
+import com.lcl.context.BaseContext;
 import com.lcl.properties.JwtProperties;
 import com.lcl.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -33,6 +34,18 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
      */
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //判断当前拦截到的是Controller的方法还是其他资源
+        //Long id = Long.valueOf(request.getHeader("id"));
+        Long id;
+        try {
+           id= Long.valueOf(request.getHeader("id"));
+        }
+         catch (Exception e) {
+            //4、不通过，响应401状态码
+          //  response.setStatus(401);
+             response.setStatus(401);
+             return false;
+       }
+        BaseContext.setCurrentId(id);
         return true;
 //        if (!(handler instanceof HandlerMethod)) {
 //            //当前拦截到的不是动态方法，直接放行

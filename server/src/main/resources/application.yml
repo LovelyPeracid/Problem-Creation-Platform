@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8088
 
 spring:
   profiles:
@@ -12,6 +12,11 @@ spring:
       url: jdbc:mysql://${lcl.datasource.host}:${lcl.datasource.port}/${lcl.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
       username: ${lcl.datasource.username}
       password: ${lcl.datasource.password}
+  redis:
+    host: ${lcl.redis.host}
+    port: ${lcl.redis.port}
+    password: ${lcl.redis.password}
+    database: ${lcl.redis.database}
 
 mybatis:
   #mapper配置文件
@@ -23,6 +28,7 @@ mybatis:
 
 logging:
   level:
+    org.springframework.jdbc.support.JdbcTransactionManager: debug
     com:
       lcl:
         mapper: debug
@@ -37,3 +43,8 @@ lcl:
     admin-ttl: 7200000
     # 设置前端传递过来的令牌名称
     admin-token-name: token
+  alioss:
+    endpoint: ${lcl.alioss.endpoint}
+    access-key-secret: ${lcl.alioss.access-key-secret}
+    access-key-id: ${lcl.alioss.access-key-id}
+    bucket-name: ${lcl.alioss.bucket-name}
