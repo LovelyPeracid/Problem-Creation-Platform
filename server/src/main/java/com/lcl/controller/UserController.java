@@ -1,5 +1,6 @@
 package com.lcl.controller;
 
+import com.lcl.annotation.Authenticate;
 import com.lcl.constant.JwtClaimsConstant;
 import com.lcl.dto.UserPageQueryDTO;
 import com.lcl.entity.ExtUser;
@@ -29,6 +30,7 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Authenticate
     @GetMapping("/all")
     @ApiOperation("获取全部用户")
     public Result list(){
