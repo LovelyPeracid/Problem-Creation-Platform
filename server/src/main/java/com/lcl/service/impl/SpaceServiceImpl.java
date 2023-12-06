@@ -66,7 +66,8 @@ public class SpaceServiceImpl implements SpaceService {
         BeanUtils.copyProperties(spaceDTO,space);
         spaceMapper.save(space);
         Space byName = spaceMapper.getByName(space.getSpaceName());
-       operationRecordService.SpaceOperation(byName,Ip, OperationRecordConstant.CREATE_SPACE);
+        operationRecordService.SpaceOperation(byName,Ip, OperationRecordConstant.CREATE_SPACE);
+       // spaceUserMapper.addMember();
     }
 
     @Override
@@ -104,8 +105,16 @@ public class SpaceServiceImpl implements SpaceService {
         space.setSpaceId(spaceUser.getSpaceId());
         operationRecordService.SpaceOperation(space,Ip,OperationRecordConstant.ADD_SPACE_MEMBER);
     }
+/**
+ * @param spaceUser:
+ * @param request:
+ * @return void
+ * @author LovelyPeracid
+ * @description
+ * @date 2023/12/6 9:34
+ */
 
-    @Transactional
+@Transactional
     @Override
     public void updaeSpaceUser(SpaceUser spaceUser, HttpServletRequest request) {
         List<String> Ip = ipAndAgentService.getInfo(request);

@@ -89,7 +89,7 @@ public class SpaceController {
     }
     @PostMapping("/{spaceId}/member")
     @ApiOperation("添加空间成员")
-    public  Result addMember(@PathVariable Long spaceId , SpaceAddMemberDTO spaceAddMemberDTO , @ApiIgnore HttpServletRequest request){
+    public  Result addMember(@PathVariable Long spaceId ,@RequestBody SpaceAddMemberDTO spaceAddMemberDTO , @ApiIgnore HttpServletRequest request){
         SpaceUser spaceUser = new SpaceUser();
         BeanUtils.copyProperties(spaceAddMemberDTO,spaceUser);
         spaceUser.setSpaceId(spaceId);
@@ -98,7 +98,7 @@ public class SpaceController {
     }
     @PutMapping("/{spaceId}/member")
     @ApiOperation("更新空间成员")
-    public  Result update(@PathVariable Long spaceId ,SpaceUserUpdateDTO spaceUserUpdateDTO,@ApiIgnore HttpServletRequest request){
+    public  Result update(@PathVariable Long spaceId ,@RequestBody SpaceUserUpdateDTO spaceUserUpdateDTO,@ApiIgnore HttpServletRequest request){
             SpaceUser spaceUser = new SpaceUser();
             BeanUtils.copyProperties(spaceUserUpdateDTO,spaceUser);
             spaceUser.setSpaceId(spaceId);

@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Data
 public class SpaceUserUpdateDTO implements Serializable {
     @ApiModelProperty(required = false)
-    private Boolean is_suspended;
+    private Boolean isSuspended;
     @ApiModelProperty(required = false)
     private Integer role;
     @ApiModelProperty(required = true)

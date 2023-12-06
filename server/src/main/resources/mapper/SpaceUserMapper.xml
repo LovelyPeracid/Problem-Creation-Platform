@@ -6,10 +6,10 @@
         update  user_space
         <set>
             <if test="isSuspended!=null">
-                is_suspended=#{isSuspended}
+                is_suspended=#{isSuspended},
             </if>
             <if test="role!=null">
-                role=#{role}
+                role=#{role},
             </if>
         </set>
         where user_id =#{userId} and space_id=#{spaceId}

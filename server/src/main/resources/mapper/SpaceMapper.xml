@@ -15,7 +15,7 @@
                 is_deleted=#{isDeleted},
             </if>
             <if test="spaceName!=null">
-                space_name=#{spaceName}
+                space_name=#{spaceName},
             </if>
         </set>
         where space_id=#{spaceId}
