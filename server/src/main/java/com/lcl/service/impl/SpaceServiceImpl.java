@@ -64,6 +64,7 @@ public class SpaceServiceImpl implements SpaceService {
         //System.out.println(spaceDTO.getOwner());
         Space space = new Space();
         BeanUtils.copyProperties(spaceDTO,space);
+        space.setIsDeleted(DeletedConstant.DISDELETED);
         spaceMapper.save(space);
         Space byName = spaceMapper.getByName(space.getSpaceName());
         operationRecordService.SpaceOperation(byName,Ip, OperationRecordConstant.CREATE_SPACE);

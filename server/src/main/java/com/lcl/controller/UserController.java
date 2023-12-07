@@ -30,7 +30,7 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
-    @Authenticate
+
     @GetMapping("/all")
     @ApiOperation("获取全部用户")
     public Result list(){

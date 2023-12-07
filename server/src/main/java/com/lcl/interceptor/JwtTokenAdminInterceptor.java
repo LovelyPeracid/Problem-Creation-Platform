@@ -1,8 +1,14 @@
 package com.lcl.interceptor;
 
+import com.alibaba.fastjson.JSONObject;
 import com.lcl.constant.JwtClaimsConstant;
+import com.lcl.constant.MessageConstant;
+import com.lcl.constant.MethodConstant;
 import com.lcl.context.BaseContext;
+import com.lcl.entity.ExtUser;
+import com.lcl.mapper.UserMapper;
 import com.lcl.properties.JwtProperties;
+import com.lcl.result.Result;
 import com.lcl.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import javax.security.auth.message.AuthException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -22,7 +30,8 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
 
     @Autowired
     private JwtProperties jwtProperties;
-
+    @Autowired
+    private UserMapper userMapper;
     /**
      * 校验jwt
      *
@@ -35,13 +44,34 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //判断当前拦截到的是Controller的方法还是其他资源
         //Long id = Long.valueOf(request.getHeader("id"));
-        Long id;
+        Long id=null;
+        System.out.println("拦截器开始");
         try {
            id= Long.valueOf(request.getHeader("id"));
+            String method = request.getMethod();
+            if(method!= MethodConstant.GET){
+                ExtUser byId =  userMapper.getById(id);
+                if(byId==null||byId.getIsSuspended()){
+                    throw new  AuthException(MessageConstant.ACCESS_DENIED);
+                }
+            }
         }
-         catch (Exception e) {
-            //4、不通过，响应401状态码
-          //  response.setStatus(401);
+        catch (NumberFormatException | NullPointerException e){
+            response.setStatus(401);
+            response.setContentType("application/json");
+            //response.
+            Result<Object> error = Result.error(MessageConstant.HEADER_FORMAT_ERROR);
+            String jsonString = JSONObject.toJSONString(error);
+            response.getWriter().write(jsonString);
+        }
+        catch (AuthException e){
+            response.setStatus(403);
+            response.setContentType("application/json");
+            Result<Object> error = Result.error(e.getMessage());
+            String jsonString = JSONObject.toJSONString(error);
+            response.getWriter().write(jsonString);
+        }
+        catch (Exception e) {
              response.setStatus(401);
              return false;
        }

@@ -2,9 +2,11 @@ package com.lcl.controller;
 
 import com.aliyun.oss.ServiceException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.lcl.annotation.Authenticate;
 import com.lcl.dto.*;
 import com.lcl.entity.OperationRecord;
 import com.lcl.entity.Space;
+import com.lcl.entity.SpaceProblem;
 import com.lcl.entity.SpaceUser;
 import com.lcl.result.PageResult;
 import com.lcl.result.Result;
@@ -73,6 +75,7 @@ public class SpaceController {
         spaceService.save(space,request);
         return Result.success();
     }
+    @Authenticate
     @DeleteMapping("/{id}")
     @ApiOperation("删除空间")
     public  Result delete(@PathVariable Long id,@ApiIgnore HttpServletRequest httpServletRequest){
@@ -106,5 +109,10 @@ public class SpaceController {
             return Result.success();
 
     }
-
+//    @PostMapping("/{spaceId}/problem")
+//    @ApiOperation("添加题目")
+//    public Result addProblem(@PathVariable Long spaceId, @RequestBody SpaceProblemDTO spaceProblemDTO,@ApiIgnore HttpServletRequest request){
+//
+//
+//    }
 }

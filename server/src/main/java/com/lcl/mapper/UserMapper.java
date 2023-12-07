@@ -17,6 +17,8 @@ public interface UserMapper {
     List<ExtUser> queryAll();
 
     Page<ExtUser> page(UserPageQueryDTO userPageQueryDTO);
+    @Select("select * from ext_user_info where user_id =#{currendId}")
+    ExtUser getById(Long currentId);
 //    @Select("select  *from  ext_user_info")
 //    ExtUser queryAll();
 }

@@ -26,4 +26,7 @@ public class MessageConstant {
     public static  final  String NAME_DUPLICATION="名称重复无法创建";
 
     public static  final  String MEMBER_ALREADY_EXIST="成员已经在空间中";
+
+    public static  final  String ACCESS_DENIED="权限不足";
+    public static  final  String HEADER_FORMAT_ERROR="请求头中id不存在或格式不正确";
 }
