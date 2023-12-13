@@ -31,4 +31,6 @@ public class Space  implements Serializable {
     private LocalDateTime updatedAt;
     @TableField("created_at")
     private LocalDateTime createdAt;
+    @TableField("gitlab_id")
+    private Long gitlabId;
 }

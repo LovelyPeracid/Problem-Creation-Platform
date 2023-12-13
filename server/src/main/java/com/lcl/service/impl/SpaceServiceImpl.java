@@ -14,6 +14,7 @@ import com.lcl.exception.SpaceAddMemberException;
 import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceUserMapper;
 import com.lcl.result.Result;
+import com.lcl.service.GitlabService;
 import com.lcl.service.IpAndAgentService;
 import com.lcl.service.OperationRecordService;
 import com.lcl.service.SpaceService;
@@ -40,7 +41,8 @@ public class SpaceServiceImpl implements SpaceService {
     private OperationRecordService operationRecordService;
     @Autowired
     private SpaceUserMapper spaceUserMapper;
-
+    @Autowired
+    private GitlabService gitlabService;
     @Override
     public Space getById(Long id) {
         return  spaceMapper.getById(id);
@@ -65,9 +67,13 @@ public class SpaceServiceImpl implements SpaceService {
         Space space = new Space();
         BeanUtils.copyProperties(spaceDTO,space);
         space.setIsDeleted(DeletedConstant.DISDELETED);
+
+        Long GitlabId  = gitlabService.CreateSpace(space);
+        space.setGitlabId(GitlabId);
         spaceMapper.save(space);
         Space byName = spaceMapper.getByName(space.getSpaceName());
         operationRecordService.SpaceOperation(byName,Ip, OperationRecordConstant.CREATE_SPACE);
+
        // spaceUserMapper.addMember();
     }
 
@@ -102,9 +108,7 @@ public class SpaceServiceImpl implements SpaceService {
         }
         spaceUser.setIsSuspended(DeletedConstant.DISDELETED);
         spaceUserMapper.addMember(spaceUser);
-        Space space = new Space();
-        space.setSpaceId(spaceUser.getSpaceId());
-        operationRecordService.SpaceOperation(space,Ip,OperationRecordConstant.ADD_SPACE_MEMBER);
+        operationRecordService.SpaceUserOperation(spaceUser,Ip,OperationRecordConstant.ADD_SPACE_MEMBER);
     }
 /**
  * @param spaceUser:
@@ -120,9 +124,7 @@ public class SpaceServiceImpl implements SpaceService {
     public void updaeSpaceUser(SpaceUser spaceUser, HttpServletRequest request) {
         List<String> Ip = ipAndAgentService.getInfo(request);
         spaceUserMapper.update(spaceUser);
-        Space space = new Space();
-        space.setSpaceId(spaceUser.getSpaceId());
-        operationRecordService.SpaceOperation(space,Ip,OperationRecordConstant.CHANGE_MEMBER_PERMISSION);
+        operationRecordService.SpaceUserOperation(spaceUser,Ip,OperationRecordConstant.CHANGE_MEMBER_PERMISSION);
     }
 
 //    @Override

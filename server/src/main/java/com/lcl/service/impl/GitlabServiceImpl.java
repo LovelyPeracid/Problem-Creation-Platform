@@ -1,15 +1,25 @@
 package com.lcl.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.aliyun.oss.ServiceException;
 import com.lcl.constant.GitlabConstant;
+import com.lcl.constant.MessageConstant;
+import com.lcl.entity.Problem;
 import com.lcl.entity.Space;
+import com.lcl.exception.BaseException;
+import com.lcl.mapper.SpaceMapper;
+import com.lcl.mapper.SpaceProblemMapper;
 import com.lcl.result.Result;
 import com.lcl.service.GitlabService;
+import com.lcl.service.SpaceService;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
 import org.gitlab4j.api.GroupApi;
 import org.gitlab4j.api.models.Group;
 import org.gitlab4j.api.models.GroupParams;
+import org.gitlab4j.api.models.Project;
+import org.gitlab4j.api.models.Visibility;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,41 +27,45 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class GitlabServiceImpl implements GitlabService {
+    private  String baseUrl=GitlabConstant.baseUrl;
+    private  String token=GitlabConstant.token;
+    @Autowired
+    private SpaceMapper spaceMapper;
+    @Override
+    public Long CreateSpace(Space space) {
+        try {
+            // 创建一个连接到 GitLab 服务器的 GitLabApi 实例
+            GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+            GroupParams group = new GroupParams();
+            group.withName(space.getSpaceName());
+            String id = IdUtil.getSnowflakeNextIdStr();
+            group.withPath(id);
+            Group newGroup = gitLabApi.getGroupApi().createGroup(group);
+            System.out.println("New group created with ID: " + newGroup.getId());
+            return newGroup.getId();
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            throw new  BaseException(MessageConstant.UNKNOWN_ERROR);
+        }
+    }
 
     @Override
-    public Space CreateSpace(Space space) {
-//        String token = GitlabConstant.token;
-//        String baseUrl = GitlabConstant.baseUrl;
-//        String suffix=null;
-//      //  if(flag==0) suffix="x";
-//
-//        GitLabApi gitLabApi = null;
-//        try {
-//
-//            gitLabApi = new GitLabApi(baseUrl, token);
-//        } catch (Exception e) {
-//            System.out.println(e);
-//            String message = "token过期或者gitlab 服务器变动";
-//            //throw new ServiceException(message,400);
-//        }
-//        // gitLabApi = new GitLabApi(baseUrl, token);
-//
-//        String projectName = space.getSpaceName();
-//
-//        GroupApi groupApi = gitLabApi.getGroupApi();
-//        GroupParams params= new GroupParams();
-//        params.withName(projectName+"space"+suffix);//避免前人把后人的个人空间创建掉
-//        params.withPath(projectName+"space"+suffix);
-//        Group group=null;
-//
-//        try {
-//            group = groupApi.createGroup(params);
-//        } catch (GitLabApiException e) {
-//            //throw new RuntimeException(e);
-//            System.out.println(e);
-//            String message = "网络波动或创建失败";
-//            throw new ServiceException(message,400);
-//        }
-        return  null;
+    public Long CreateProblem(Problem problem) {
+        try {
+            Long problemId = problem.getProblemId();
+            Space byId = spaceMapper.getById(problem.getSpaceId());
+            GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+            String path = IdUtil.getSnowflakeNextIdStr();
+            Project project = new Project()
+                    .withName(path)
+                    .withNamespaceId(byId.getGitlabId())
+                    .withVisibility(Visibility.PUBLIC);
+            // 使用GitLabApi创建新的项目
+            Project newProject = gitLabApi.getProjectApi().createProject(project);
+            return newProject.getId();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw  new BaseException(MessageConstant.UNKNOWN_ERROR);
+        }
     }
 }

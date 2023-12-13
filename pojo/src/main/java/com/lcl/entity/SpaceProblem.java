@@ -19,6 +19,7 @@ public class SpaceProblem implements Serializable {
     @TableId
     private  Long spaceProblemId;
     private Long spaceId;
+    @TableField("is_deleted")
     private Boolean isDeleted;
     private LocalDateTime createdAt;
     private Long problemId;

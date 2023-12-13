@@ -43,6 +43,10 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
      */
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         //判断当前拦截到的是Controller的方法还是其他资源
+//        if (!(handler instanceof HandlerMethod)) {
+//            //当前拦截到的不是动态方法，直接放行
+//            return true;
+//        }
         //Long id = Long.valueOf(request.getHeader("id"));
         Long id=null;
         System.out.println("拦截器开始");
@@ -63,6 +67,7 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
             Result<Object> error = Result.error(MessageConstant.HEADER_FORMAT_ERROR);
             String jsonString = JSONObject.toJSONString(error);
             response.getWriter().write(jsonString);
+            return false;
         }
         catch (AuthException e){
             response.setStatus(403);
@@ -70,6 +75,7 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
             Result<Object> error = Result.error(e.getMessage());
             String jsonString = JSONObject.toJSONString(error);
             response.getWriter().write(jsonString);
+            return  false;
         }
         catch (Exception e) {
              response.setStatus(401);

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lcl.mapper.ProblemMapper">
+    <select id="page" resultType="com.lcl.vo.ProblemVO">
+        SELECT p.*
+        FROM problem p
+        JOIN ext_user_info eu ON p.author = eu.user_id
+        WHERE 1=1
+        <if test="username != null and username != ''">
+            AND eu.username LIKE CONCAT('%', #{username}, '%')
+        </if>
+        <if test="title != null and title != ''">
+            AND p.title LIKE CONCAT('%', #{title}, '%')
+        </if>
+<!--        <if test="problemId != null">-->
+<!--            AND p.problem_id = #{problemId}-->
+<!--        </if>-->
+    </select>
+</mapper>

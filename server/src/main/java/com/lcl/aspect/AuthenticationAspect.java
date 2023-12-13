@@ -41,9 +41,7 @@ public class AuthenticationAspect {
         if(byId.getOwner()!=currentId){
             throw new AuthException(MessageConstant.ACCESS_DENIED);
         }
-
         System.out.println(Arrays.toString(args));
-
         Object proceed = proceedingJoinPoint.proceed();
         System.out.println("拦截完成");
         return  proceed;

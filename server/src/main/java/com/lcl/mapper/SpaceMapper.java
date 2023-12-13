@@ -25,8 +25,8 @@ public interface SpaceMapper {
     @Select("select  * from space where space_name =#{spaceName}")
     Space getByName(String spaceName);
     @AutoFill(OperationType.INSERT)
-    @Insert("insert into  space(space_name, updated_at, created_at, is_deleted, owner, type)"
-        +"values (#{spaceName},#{updatedAt},#{createdAt},#{isDeleted},#{owner},#{type})"
+    @Insert("insert into  space(space_name, updated_at, created_at, is_deleted, owner, type,gitlab_id)"
+        +"values (#{spaceName},#{updatedAt},#{createdAt},#{isDeleted},#{owner},#{type},#{gitlabId})"
     )
     void save(Space space);
     @AutoFill(OperationType.UPDATE)
