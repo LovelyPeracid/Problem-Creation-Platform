@@ -30,6 +30,8 @@ public interface ProblemMapper {
     void save(Problem problem);
     @Select("select *from problem where title=#{title}")
     Problem getByTitle(String title);
+    @AutoFill(OperationType.UPDATE)
+    void update(Problem problem);
 
     //void save(Problem problem);
 }

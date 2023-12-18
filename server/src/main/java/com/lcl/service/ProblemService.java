@@ -2,6 +2,8 @@ package com.lcl.service;
 
 import com.lcl.dto.ProblemCreateDTO;
 import com.lcl.dto.ProblemPageQueryDTO;
+import com.lcl.dto.ProblemStartOrStopDTO;
+import com.lcl.dto.ProblemUpdateDTO;
 import com.lcl.result.PageResult;
 import com.lcl.vo.ProblemVO;
 
@@ -21,4 +23,8 @@ public interface ProblemService {
     List<ProblemVO> getBySpaceId(Long spaceId);
 
     void save(ProblemCreateDTO problemCreateDTO, Long spaceId, HttpServletRequest request);
+
+    void startOrStop(Long spaceId, ProblemStartOrStopDTO problemStartOrStopDTO, HttpServletRequest request);
+
+    void update(Long spaceId, ProblemUpdateDTO problemUpdateDTO, HttpServletRequest request);
 }

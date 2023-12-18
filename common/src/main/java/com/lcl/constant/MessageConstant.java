@@ -29,4 +29,6 @@ public class MessageConstant {
 
     public static  final  String ACCESS_DENIED="权限不足";
     public static  final  String HEADER_FORMAT_ERROR="请求头中id不存在或格式不正确";
+    public static  final  String SPACE_NOT_EXIST="空间不存在";
+    public static  final  String ILLEGAL_OPERATION="非法操作";
 }

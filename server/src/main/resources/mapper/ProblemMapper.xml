@@ -2,6 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lcl.mapper.ProblemMapper">
+    <update id="update">
+        update problem
+        <set>
+            <if test="updatedAt!=null">
+                updated_at=#{updatedAt},
+            </if>
+            <if test="title!=null">
+                title=#{title},
+            </if>
+            <if test="isDeprecated!=null">
+                is_deprecated=#{isDeprecated},
+            </if>
+            <if test="spaceId!=null">
+                space_id=#{spaceId},
+            </if>
+
+        </set>
+        where problem_id=#{problemId}
+    </update>
     <select id="page" resultType="com.lcl.vo.ProblemVO">
         SELECT p.*
         FROM problem p

@@ -4,20 +4,25 @@ import com.lcl.constant.DeletedConstant;
 import com.lcl.constant.MessageConstant;
 import com.lcl.constant.OperationRecordConstant;
 import com.lcl.constant.StatusConstant;
+import com.lcl.context.BaseContext;
 import com.lcl.dto.SpaceCreateDTO;
 import com.lcl.dto.SpaceUpdateDTO;
 import com.lcl.dto.SpaceUserUpdateDTO;
+import com.lcl.entity.ExtUser;
 import com.lcl.entity.Space;
 import com.lcl.entity.SpaceUser;
+import com.lcl.exception.BaseException;
 import com.lcl.exception.NameDuplicationException;
 import com.lcl.exception.SpaceAddMemberException;
 import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceUserMapper;
+import com.lcl.mapper.UserMapper;
 import com.lcl.result.Result;
 import com.lcl.service.GitlabService;
 import com.lcl.service.IpAndAgentService;
 import com.lcl.service.OperationRecordService;
 import com.lcl.service.SpaceService;
+import com.lcl.vo.SpaceVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -43,9 +48,14 @@ public class SpaceServiceImpl implements SpaceService {
     private SpaceUserMapper spaceUserMapper;
     @Autowired
     private GitlabService gitlabService;
+    @Autowired
+    private UserMapper userMapper;
     @Override
-    public Space getById(Long id) {
-        return  spaceMapper.getById(id);
+    public SpaceVO getById(Long id) {
+       Space space = spaceMapper.getById(id);
+       SpaceVO spaceVO = new SpaceVO();
+        BeanUtils.copyProperties(space,spaceVO);
+        return spaceVO;
     }
 
     @Override
@@ -102,7 +112,11 @@ public class SpaceServiceImpl implements SpaceService {
     @Transactional
     public void addMember(SpaceUser spaceUser, HttpServletRequest request) {
         List<String> Ip = ipAndAgentService.getInfo(request);
-       SpaceUser one= spaceUserMapper.getByUserId(spaceUser.getSpaceId(),spaceUser.getUserId());
+        SpaceUser one= spaceUserMapper.getByUserId(spaceUser.getSpaceId(),spaceUser.getUserId());
+        ExtUser byId = userMapper.getById(spaceUser.getUserId());
+        if(byId==null||byId.getIsSuspended()){
+            throw  new BaseException(MessageConstant.ACCOUNT_LOCKED);
+        }
         if(one!=null){
             throw new SpaceAddMemberException(MessageConstant.MEMBER_ALREADY_EXIST);
         }
@@ -125,6 +139,19 @@ public class SpaceServiceImpl implements SpaceService {
         List<String> Ip = ipAndAgentService.getInfo(request);
         spaceUserMapper.update(spaceUser);
         operationRecordService.SpaceUserOperation(spaceUser,Ip,OperationRecordConstant.CHANGE_MEMBER_PERMISSION);
+    }
+
+    @Override
+    public void transference(SpaceUser spaceUser, HttpServletRequest request) {
+        List<String> Ip = ipAndAgentService.getInfo(request);
+        spaceUserMapper.update(spaceUser);
+        SpaceUser currendUser = new SpaceUser();
+        currendUser.setUserId(BaseContext.getCurrentId());
+        currendUser.setUserSpaceId(spaceUser.getUserSpaceId());
+        currendUser.setRole(2);
+        spaceUserMapper.update(currendUser);
+        operationRecordService.SpaceUserOperation(spaceUser,Ip,OperationRecordConstant.CHANGE_MEMBER_PERMISSION);
+        operationRecordService.SpaceUserOperation(currendUser,Ip,OperationRecordConstant.TRANSFER_ROOT);
     }
 
 //    @Override

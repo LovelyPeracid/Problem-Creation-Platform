@@ -8,6 +8,8 @@ import com.lcl.constant.OperationRecordConstant;
 import com.lcl.context.BaseContext;
 import com.lcl.dto.ProblemCreateDTO;
 import com.lcl.dto.ProblemPageQueryDTO;
+import com.lcl.dto.ProblemStartOrStopDTO;
+import com.lcl.dto.ProblemUpdateDTO;
 import com.lcl.entity.Problem;
 import com.lcl.entity.SpaceProblem;
 import com.lcl.exception.BaseException;
@@ -89,8 +91,43 @@ public class ProblemServiceImpl implements ProblemService {
         spaceProblem.setSpaceId(spaceId);
         spaceProblem.setIsDeleted(DeletedConstant.DISDELETED);
         spaceProblemMapper.save(spaceProblem);
+        operationRecordService.ProblemOperation(one,Ip, OperationRecordConstant.CREATE_PROBLEM);
 
-        operationRecordService.ProblemOperation(one,Ip, OperationRecordConstant.CREATE_QUESTION);
+    }
 
+    @Override
+    @Transactional
+    public void startOrStop(Long spaceId, ProblemStartOrStopDTO problemStartOrStopDTO, HttpServletRequest request) {
+        Problem problem = new Problem();
+        List<String> Ip = ipAndAgentService.getInfo(request);
+        BeanUtils.copyProperties(problemStartOrStopDTO,problem);
+        problem.setSpaceId(spaceId);
+        problemMapper.update(problem);
+        String type=null;
+        if(problem.getIsDeprecated()){
+            type=OperationRecordConstant.PROBLEM_STATUS_DISABLED;
+        }
+        else{
+            type=OperationRecordConstant.PROBLEM_STATUS_ENABLED;
+        }
+        operationRecordService.ProblemOperation(problem,Ip,type);
+    }
+
+    @Override
+    @Transactional
+    public void update(Long spaceId, ProblemUpdateDTO problemUpdateDTO, HttpServletRequest request) {
+        Problem problem = new Problem();
+        List<String> Ip = ipAndAgentService.getInfo(request);
+        BeanUtils.copyProperties(problemUpdateDTO,problem);
+        if(problemUpdateDTO.getSpaceId()!=null){
+            SpaceProblem spaceProblem=   spaceProblemMapper.getBySpaceIdAndProblemId(problem);
+            spaceProblemMapper.update(spaceProblem);
+            operationRecordService.ProblemOperation(problem,Ip,OperationRecordConstant.TRANSFER_PROBLEM);
+        }
+        else {
+        problem.setSpaceId(spaceId);
+        operationRecordService.ProblemOperation(problem,Ip,OperationRecordConstant.UPDATE_PROBLEM);
+        }
+        problemMapper.update(problem);
     }
 }

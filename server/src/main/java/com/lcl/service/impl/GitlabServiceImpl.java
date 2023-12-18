@@ -21,6 +21,7 @@ import org.gitlab4j.api.models.Project;
 import org.gitlab4j.api.models.Visibility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author LovelyPeracid
@@ -50,6 +51,7 @@ public class GitlabServiceImpl implements GitlabService {
     }
 
     @Override
+   // @Transactional
     public Long CreateProblem(Problem problem) {
         try {
             Long problemId = problem.getProblemId();
@@ -59,13 +61,22 @@ public class GitlabServiceImpl implements GitlabService {
             Project project = new Project()
                     .withName(path)
                     .withNamespaceId(byId.getGitlabId())
-                    .withVisibility(Visibility.PUBLIC);
+                    .withVisibility(Visibility.PUBLIC)
+                    .withApprovalsBeforeMerge(1);
             // 使用GitLabApi创建新的项目
             Project newProject = gitLabApi.getProjectApi().createProject(project);
             return newProject.getId();
+
         } catch (Exception e) {
             e.printStackTrace();
             throw  new BaseException(MessageConstant.UNKNOWN_ERROR);
         }
     }
+
+    @Override
+    public void commit() {
+
+    }
+
+
 }

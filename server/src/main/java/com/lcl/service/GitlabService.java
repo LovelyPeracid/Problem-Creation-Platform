@@ -10,4 +10,6 @@ public interface GitlabService {
     Long CreateSpace(Space space);
 
     Long CreateProblem(Problem problem);
+
+    void commit();
 }

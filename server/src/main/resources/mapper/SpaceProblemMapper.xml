@@ -2,4 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.lcl.mapper.SpaceProblemMapper">
+
+    <update id="update">
+        update space_problem
+        <set>
+            <if test="updatedAt!=null">
+                updatedAt=#{updatedAt},
+            </if>
+            <if test="spaceId!=null">
+                space_id=#{spaceId},
+            </if>
+            <if test="is_deleted">
+                is_deleted=#{isDeleted},
+            </if>
+        </set>
+        where space_problem_id=#{spaceProblemId}
+    </update>
 </mapper>
