@@ -21,7 +21,7 @@
         </set>
         where problem_id=#{problemId}
     </update>
-    <select id="page" resultType="com.lcl.vo.ProblemVO">
+    <select id="page" resultType="com.lcl.entity.Problem">
         SELECT p.*
         FROM problem p
         JOIN ext_user_info eu ON p.author = eu.user_id

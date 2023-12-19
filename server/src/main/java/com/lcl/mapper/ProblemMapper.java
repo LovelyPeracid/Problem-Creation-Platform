@@ -21,7 +21,7 @@ public interface ProblemMapper {
 
     Page<ProblemVO> page(ProblemPageQueryDTO problemPageQueryDTO);
     @Select("select * from problem where problem_id=#{problemId}")
-    ProblemVO getById(Long problemId);
+    Problem getById(Long problemId);
 
     @Select("select * from problem where space_id=#{spaceId}")
     List<ProblemVO> getBySpaceId(Long spaceId);

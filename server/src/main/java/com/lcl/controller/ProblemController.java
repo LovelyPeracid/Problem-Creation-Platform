@@ -65,8 +65,11 @@ public class ProblemController {
         return Result.success();
 
     }
-//    @PutMapping("/space/{spaceId}/commit")
-//    public Result commit(){
-//        //problemService
-//    }
+    @PutMapping("/space/{spaceId}/problem/{problemId}/push")
+    public Result commit(@PathVariable Long spaceId, @PathVariable Long problemId ,@RequestBody String markdownContent ,@ApiIgnore HttpServletRequest request){
+        problemService.pushContent(spaceId,problemId,markdownContent,request);
+        return null;
+        //problemService
+    }
+
 }

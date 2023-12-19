@@ -47,6 +47,8 @@ public class AuthenticationAspect {
     private  void  userPt(){};
     @Pointcut("@annotation(com.lcl.annotation.Admin)")
     private void  admin(){};
+    @Pointcut("@annotation(com.lcl.annotation.HigherRole)")
+    private void  HigherRole(){};
     /**
      * @param proceedingJoinPoint:
      * @return Object
@@ -73,54 +75,46 @@ public class AuthenticationAspect {
         return  proceed;
     }
 
-    @Around("userPt()")
+    @Around("HigherRole()")
     public  Object desc(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
         Object[] args = proceedingJoinPoint.getArgs();
         Long spaceId=(Long) args[0];
-        Space byId = spaceMapper.getById(spaceId);
+        Long UserId=(Long) args[1];
         Long currentId = BaseContext.getCurrentId();
-       // ExtUser user= userMapper.getById(currentId);
-        if(byId==null){
-            throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
-        }
-
-
-        SpaceUser byUserId = spaceUserMapper.getByUserId(spaceId,currentId);
+        SpaceUser byUserId = spaceUserMapper.getByUserId(spaceId,UserId);
         SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
-        if(byUserId.getIsSuspended()||currentUserId.getIsSuspended()||currentUserId.getRole()<=byUserId.getRole()||currentUserId.getRole()>2){
+        if(currentUserId.getRole()>=byUserId.getRole()){
             throw new AuthException(MessageConstant.ACCESS_DENIED);
         }
         Object proceed = proceedingJoinPoint.proceed();
         System.out.println("拦截完成");
         return  proceed;
-
-
     }
     //@Around()
-    @Around("admin()")
-    public Object admin(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
-        Object[] args = proceedingJoinPoint.getArgs();
-        Long spaceId=(Long) args[0];
-        Space byId = spaceMapper.getById(spaceId);
-        Long currentId = BaseContext.getCurrentId();
-        SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
-        SpaceUserUpdateDTO spaceUpdateDTO =(SpaceUserUpdateDTO) args[1];
-        if(byId==null){
-            throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
-        }
-        if(currentUserId.getRole()> RoleConstant.ADMIN||currentUserId.getIsSuspended()){
-            throw  new AuthException(MessageConstant.ACCESS_DENIED);
-        }
-
-        if(spaceUpdateDTO.getRole()!=null){
-            if(spaceUpdateDTO.getRole()<=currentUserId.getRole()){
-                throw  new AuthException(MessageConstant.ACCESS_DENIED);
-            }
-        }
-
-        Object proceed = proceedingJoinPoint.proceed();
-        System.out.println("拦截完成");
-        return  proceed;
-
-    }
+//    @Around("admin()")
+//    public Object admin(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
+//        Object[] args = proceedingJoinPoint.getArgs();
+//        Long spaceId=(Long) args[0];
+//        Space byId = spaceMapper.getById(spaceId);
+//        Long currentId = BaseContext.getCurrentId();
+//        SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
+//        SpaceUserUpdateDTO spaceUpdateDTO =(SpaceUserUpdateDTO) args[1];
+//        if(byId==null){
+//            throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
+//        }
+//        if(currentUserId.getRole()> RoleConstant.ADMIN||currentUserId.getIsSuspended()){
+//            throw  new AuthException(MessageConstant.ACCESS_DENIED);
+//        }
+//
+//        if(spaceUpdateDTO.getRole()!=null){
+//            if(spaceUpdateDTO.getRole()<=currentUserId.getRole()){
+//                throw  new AuthException(MessageConstant.ACCESS_DENIED);
+//            }
+//        }
+//
+//        Object proceed = proceedingJoinPoint.proceed();
+//        System.out.println("拦截完成");
+//        return  proceed;
+//
+//    }
 }

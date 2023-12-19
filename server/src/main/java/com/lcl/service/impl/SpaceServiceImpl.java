@@ -1,9 +1,6 @@
 package com.lcl.service.impl;
 
-import com.lcl.constant.DeletedConstant;
-import com.lcl.constant.MessageConstant;
-import com.lcl.constant.OperationRecordConstant;
-import com.lcl.constant.StatusConstant;
+import com.lcl.constant.*;
 import com.lcl.context.BaseContext;
 import com.lcl.dto.SpaceCreateDTO;
 import com.lcl.dto.SpaceUpdateDTO;
@@ -118,6 +115,13 @@ public class SpaceServiceImpl implements SpaceService {
             throw  new BaseException(MessageConstant.ACCOUNT_LOCKED);
         }
         if(one!=null){
+            if(one.getIsSuspended()){
+                one.setIsSuspended(true);
+                one.setRole(RoleConstant.VISITOR);
+                spaceUserMapper.update(one);
+                operationRecordService.SpaceUserOperation(one,Ip,OperationRecordConstant.ADD_SPACE_MEMBER);
+                return;
+            }
             throw new SpaceAddMemberException(MessageConstant.MEMBER_ALREADY_EXIST);
         }
         spaceUser.setIsSuspended(DeletedConstant.DISDELETED);
@@ -142,6 +146,7 @@ public class SpaceServiceImpl implements SpaceService {
     }
 
     @Override
+    @Transactional
     public void transference(SpaceUser spaceUser, HttpServletRequest request) {
         List<String> Ip = ipAndAgentService.getInfo(request);
         spaceUserMapper.update(spaceUser);
@@ -149,6 +154,9 @@ public class SpaceServiceImpl implements SpaceService {
         currendUser.setUserId(BaseContext.getCurrentId());
         currendUser.setUserSpaceId(spaceUser.getUserSpaceId());
         currendUser.setRole(2);
+        Space byId = spaceMapper.getById(spaceUser.getSpaceId());
+        byId.setOwner(spaceUser.getUserId());
+        spaceMapper.update(byId);
         spaceUserMapper.update(currendUser);
         operationRecordService.SpaceUserOperation(spaceUser,Ip,OperationRecordConstant.CHANGE_MEMBER_PERMISSION);
         operationRecordService.SpaceUserOperation(currendUser,Ip,OperationRecordConstant.TRANSFER_ROOT);

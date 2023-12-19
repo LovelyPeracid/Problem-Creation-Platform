@@ -4,6 +4,7 @@ import com.aliyun.oss.ServiceException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.lcl.annotation.Admin;
 import com.lcl.annotation.Authenticate;
+import com.lcl.annotation.HigherRole;
 import com.lcl.annotation.UserAuth;
 import com.lcl.constant.MessageConstant;
 import com.lcl.dto.*;
@@ -45,7 +46,6 @@ public class SpaceController {
       SpaceVO space= spaceService.getById(id);
         return  Result.success(space);
     }
-
     @GetMapping
     @ApiOperation("批量查询")
     public Result<List<SpaceVO>> queryList(@RequestParam List<Long> ids) {
@@ -85,42 +85,53 @@ public class SpaceController {
     public  Result delete(@PathVariable Long id,@ApiIgnore HttpServletRequest httpServletRequest){
         spaceService.deleteById(id,httpServletRequest);
         return  Result.success();
-
     }
     @PutMapping("/{id}")
+    @Admin
     @ApiOperation("更新空间")
     public  Result update(@PathVariable Long id ,@Valid @RequestBody SpaceUpdateDTO spaceUpdateDTO, @ApiIgnore HttpServletRequest request){
         spaceUpdateDTO.setSpaceId(id);
         spaceService.update(spaceUpdateDTO,request);
         return  Result.success();
     }
-//    @Admin
-    @UserAuth
-    @PostMapping("/{spaceId}/member")
+    @Admin
+    @PostMapping("/{spaceId}/member/{userId}")
     @ApiOperation("添加空间成员")
-    public  Result addMember(@PathVariable Long spaceId ,@RequestBody SpaceAddMemberDTO spaceAddMemberDTO , @ApiIgnore HttpServletRequest request){
+    public  Result addMember(@PathVariable Long spaceId, Long userId,@RequestBody SpaceAddMemberDTO spaceAddMemberDTO , @ApiIgnore HttpServletRequest request){
         SpaceUser spaceUser = new SpaceUser();
         BeanUtils.copyProperties(spaceAddMemberDTO,spaceUser);
         spaceUser.setSpaceId(spaceId);
+        spaceUser.setUserId(userId);
         spaceService.addMember(spaceUser,request);
         return  Result.success();
     }
     //@UserAuth
+    /**
+     * @param spaceId:
+     * @param userId:
+     * @param spaceUserUpdateDTO:
+     * @param request:
+     * @return Result
+     * @author LovelyPeracid
+     * @description
+     * @date 2023/12/19 10:55
+     */
+
     @Admin
-    @PutMapping("/{spaceId}/member")
+    @HigherRole
+    @PutMapping("/{spaceId}/member/{userId}")
     @ApiOperation("更新空间成员")
-    public  Result update(@PathVariable Long spaceId ,@RequestBody SpaceUserUpdateDTO spaceUserUpdateDTO,@ApiIgnore HttpServletRequest request){
+    public  Result update(@PathVariable Long spaceId ,Long userId ,@RequestBody SpaceUserUpdateDTO spaceUserUpdateDTO,@ApiIgnore HttpServletRequest request){
             SpaceUser spaceUser = new SpaceUser();
             BeanUtils.copyProperties(spaceUserUpdateDTO,spaceUser);
             spaceUser.setSpaceId(spaceId);
-//            if(spaceUserUpdateDTO.getRole()==1){
-//                return Result.error(MessageConstant.ILLEGAL_OPERATION);
-//            }
+            spaceUser.setUserId(userId);
             spaceService.updaeSpaceUser(spaceUser,request);
             return Result.success();
 
     }
     @Authenticate
+    @Admin
     @PutMapping("/{spaceId}/transference")
     @ApiOperation("转让空间所有权")
     public Result transference(@PathVariable Long spaceId,@RequestBody SpaceUserUpdateDTO spaceUserUpdateDTO,@ApiIgnore HttpServletRequest request){
@@ -131,10 +142,4 @@ public class SpaceController {
         spaceService.transference(spaceUser,request);
         return Result.success();
     }
-//    @PostMapping("/{spaceId}/problem")
-//    @ApiOperation("添加题目")
-//    public Result addProblem(@PathVariable Long spaceId, @RequestBody SpaceProblemDTO spaceProblemDTO,@ApiIgnore HttpServletRequest request){
-//
-//
-//    }
 }

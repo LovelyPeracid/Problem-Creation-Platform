@@ -11,10 +11,12 @@ import com.lcl.dto.ProblemPageQueryDTO;
 import com.lcl.dto.ProblemStartOrStopDTO;
 import com.lcl.dto.ProblemUpdateDTO;
 import com.lcl.entity.Problem;
+import com.lcl.entity.Space;
 import com.lcl.entity.SpaceProblem;
 import com.lcl.exception.BaseException;
 import com.lcl.exception.NameDuplicationException;
 import com.lcl.mapper.ProblemMapper;
+import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceProblemMapper;
 import com.lcl.result.PageResult;
 import com.lcl.service.IpAndAgentService;
@@ -45,6 +47,8 @@ public class ProblemServiceImpl implements ProblemService {
     @Autowired
     private GitlabServiceImpl gitlabService;
 
+    @Autowired
+    private SpaceMapper  spaceMapper;
 
     @Override
     public PageResult page(ProblemPageQueryDTO problemPageQueryDTO) {
@@ -56,8 +60,10 @@ public class ProblemServiceImpl implements ProblemService {
 
     @Override
     public ProblemVO getById(Long problemId) {
-        ProblemVO problem= problemMapper.getById(problemId);
-        return problem;
+        Problem problem= problemMapper.getById(problemId);
+        ProblemVO problemVO = new ProblemVO();
+        BeanUtils.copyProperties(problem,problemVO);
+        return problemVO;
     }
 
     @Override
@@ -71,7 +77,7 @@ public class ProblemServiceImpl implements ProblemService {
         List<String> Ip = ipAndAgentService.getInfo(request);
         Problem problem = problemMapper.getByTitle(problemCreateDTO.getTitle());
         if(problemCreateDTO.getForkedFrom()!=null){
-            ProblemVO forked =problemMapper.getById(problemCreateDTO.getForkedFrom());
+            Problem forked =problemMapper.getById(problemCreateDTO.getForkedFrom());
             if(forked==null||forked.getIsDeprecated())
                throw new BaseException(MessageConstant.FORKED_PROBLEM_NOT_EXIST);
         }
@@ -129,5 +135,14 @@ public class ProblemServiceImpl implements ProblemService {
         operationRecordService.ProblemOperation(problem,Ip,OperationRecordConstant.UPDATE_PROBLEM);
         }
         problemMapper.update(problem);
+    }
+
+    @Override
+    public void pushContent(Long spaceId, Long problemId, String markdownContent, HttpServletRequest request) {
+        List<String> Ip = ipAndAgentService.getInfo(request);
+
+        Problem byId = problemMapper.getById(problemId);
+        Space spaceById = spaceMapper.getById(spaceId);
+        gitlabService.pushContent(spaceById.getGitlabId(),byId.getGitlabId() ,markdownContent);
     }
 }

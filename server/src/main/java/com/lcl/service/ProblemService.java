@@ -27,4 +27,6 @@ public interface ProblemService {
     void startOrStop(Long spaceId, ProblemStartOrStopDTO problemStartOrStopDTO, HttpServletRequest request);
 
     void update(Long spaceId, ProblemUpdateDTO problemUpdateDTO, HttpServletRequest request);
+
+    void pushContent(Long spaceId, Long problemId, String markdownContent, HttpServletRequest request);
 }

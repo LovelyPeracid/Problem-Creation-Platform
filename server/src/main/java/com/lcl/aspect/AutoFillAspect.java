@@ -40,7 +40,7 @@ public class AutoFillAspect {
         }
         Object arg = args[0];
         LocalDateTime now = LocalDateTime.now();
-        Long currendId= BaseContext.getCurrentId();
+   //     Long currendId= BaseContext.getCurrentId();
         switch (operationType) {
             case INSERT:{
                 try {
