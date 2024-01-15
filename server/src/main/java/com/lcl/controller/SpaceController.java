@@ -40,6 +40,13 @@ public class SpaceController {
     @Autowired
     private SpaceService spaceService;
 
+    @GetMapping("/private/{userId}")
+    @ApiOperation("根据用户Id 查询是否拥有个人空间")
+    public Result getPrivateSpace(@PathVariable Long userId){
+       Long id= spaceService.getPrivateSpaceByUserId(userId);
+       return  Result.success(id);
+    }
+
     @GetMapping("/{id}")
     @ApiOperation("查询id")
     public Result<SpaceVO> getSpace(@PathVariable Long id) {

@@ -10,19 +10,6 @@ public class MessageConstant {
     public static final String ACCOUNT_LOCKED = "账号被锁定";
     public static final String UNKNOWN_ERROR = "未知错误";
     public static final String USER_NOT_LOGIN = "用户未登录";
-    public static final String CATEGORY_BE_RELATED_BY_SETMEAL = "当前分类关联了套餐,不能删除";
-    public static final String CATEGORY_BE_RELATED_BY_DISH = "当前分类关联了菜品,不能删除";
-    public static final String SHOPPING_CART_IS_NULL = "购物车数据为空，不能下单";
-    public static final String ADDRESS_BOOK_IS_NULL = "用户地址为空，不能下单";
-    public static final String LOGIN_FAILED = "登录失败";
-    public static final String UPLOAD_FAILED = "文件上传失败";
-    public static final String SETMEAL_ENABLE_FAILED = "套餐内包含未启售菜品，无法启售";
-    public static final String PASSWORD_EDIT_FAILED = "密码修改失败";
-    public static final String DISH_ON_SALE = "起售中的菜品不能删除";
-    public static final String SETMEAL_ON_SALE = "起售中的套餐不能删除";
-    public static final String DISH_BE_RELATED_BY_SETMEAL = "当前菜品关联了套餐,不能删除";
-    public static final String ORDER_STATUS_ERROR = "订单状态错误";
-    public static final String ORDER_NOT_FOUND = "订单不存在";
     public static  final  String NAME_DUPLICATION="名称重复无法创建";
     public static  final  String FORKED_PROBLEM_NOT_EXIST="forked 题目不存在或被禁用";
     public static  final  String MEMBER_ALREADY_EXIST="成员已经在空间中";
@@ -31,4 +18,6 @@ public class MessageConstant {
     public static  final  String HEADER_FORMAT_ERROR="请求头中id不存在或格式不正确";
     public static  final  String SPACE_NOT_EXIST="空间不存在";
     public static  final  String ILLEGAL_OPERATION="非法操作";
+    public static final String PROBLEM_NOT_EXIST="题目不存在";
+
 }

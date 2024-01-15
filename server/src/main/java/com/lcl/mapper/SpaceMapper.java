@@ -31,4 +31,6 @@ public interface SpaceMapper {
     void save(Space space);
     @AutoFill(OperationType.UPDATE)
     void update(Space space);
+    @Select("select space_id from space where owner=#{userId} and type=1")
+    Long getPrivateSpaceByUserId(Long userId);
 }

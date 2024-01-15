@@ -17,7 +17,12 @@ spring:
     port: ${lcl.redis.port}
     password: ${lcl.redis.password}
     database: ${lcl.redis.database}
-
+    lettuce:
+      pool:
+        max-active: ${lcl.redis.lettuce.pool.max-active}
+        max-idle: ${lcl.redis.lettuce.pool.max-idle}
+        min-idle: ${lcl.redis.lettuce.pool.min-idle}
+        max-wait:  ${lcl.redis.lettuce.pool.max-wait}
 mybatis:
   #mapper配置文件
   mapper-locations: classpath:mapper/*.xml

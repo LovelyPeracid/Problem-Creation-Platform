@@ -18,10 +18,11 @@
                 space_id=#{spaceId},
             </if>
 
+
         </set>
         where problem_id=#{problemId}
     </update>
-    <select id="page" resultType="com.lcl.entity.Problem">
+    <select id="page" resultType="com.lcl.vo.ProblemVO">
         SELECT p.*
         FROM problem p
         JOIN ext_user_info eu ON p.author = eu.user_id

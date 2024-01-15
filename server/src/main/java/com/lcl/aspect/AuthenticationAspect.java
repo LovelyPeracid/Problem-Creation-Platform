@@ -7,9 +7,11 @@ import com.lcl.context.BaseContext;
 import com.lcl.dto.SpaceUpdateDTO;
 import com.lcl.dto.SpaceUserUpdateDTO;
 import com.lcl.entity.ExtUser;
+import com.lcl.entity.Problem;
 import com.lcl.entity.Space;
 import com.lcl.entity.SpaceUser;
 import com.lcl.exception.BaseException;
+import com.lcl.mapper.ProblemMapper;
 import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceUserMapper;
 import com.lcl.mapper.UserMapper;
@@ -41,6 +43,8 @@ public class AuthenticationAspect {
     private UserMapper userMapper;
     @Autowired
     private SpaceUserMapper  spaceUserMapper;
+    @Autowired
+    private ProblemMapper problemMapper;
     @Pointcut("@annotation(com.lcl.annotation.Authenticate)")
     private  void  pt(){};
     @Pointcut("@annotation(com.lcl.annotation.UserAuth)")
@@ -49,6 +53,10 @@ public class AuthenticationAspect {
     private void  admin(){};
     @Pointcut("@annotation(com.lcl.annotation.HigherRole)")
     private void  HigherRole(){};
+    @Pointcut("@annotation(com.lcl.annotation.UserInOtherSpace)")
+    private void CloneOrQuote(){};
+    @Pointcut("@annotation(com.lcl.annotation.UserInOtherSpace)")
+    private void UserInOtherSpace(){};
     /**
      * @param proceedingJoinPoint:
      * @return Object
@@ -90,6 +98,21 @@ public class AuthenticationAspect {
         System.out.println("拦截完成");
         return  proceed;
     }
+    @Around("UserInOtherSpace()")
+    public  Object transfer(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
+        Object[] args = proceedingJoinPoint.getArgs();
+        //Long problemId=(Long) args[0];
+        Long newSpaceId=(Long) args[1];
+        //Problem byId = problemMapper.getById(problemId);
+        SpaceUser userId = spaceUserMapper.getByUserId(newSpaceId, BaseContext.getCurrentId());
+        if(userId.getRole()>RoleConstant.USER){
+            throw new AuthException(MessageConstant.ACCESS_DENIED);
+        }
+        Object proceed = proceedingJoinPoint.proceed();
+        System.out.println("拦截完成");
+        return  proceed;
+    }
+
     //@Around()
 //    @Around("admin()")
 //    public Object admin(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{

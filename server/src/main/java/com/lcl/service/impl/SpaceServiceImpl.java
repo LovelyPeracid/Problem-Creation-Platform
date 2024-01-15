@@ -162,6 +162,11 @@ public class SpaceServiceImpl implements SpaceService {
         operationRecordService.SpaceUserOperation(currendUser,Ip,OperationRecordConstant.TRANSFER_ROOT);
     }
 
+    @Override
+    public Long getPrivateSpaceByUserId(Long userId) {
+       return spaceMapper.getPrivateSpaceByUserId(userId);
+    }
+
 //    @Override
 //    public void updaeSpaceUser(SpaceUserUpdateDTO spaceUserUpdateDTO, HttpServletRequest request) {
 //        List<String> Ip = ipAndAgentService.getInfo(request);

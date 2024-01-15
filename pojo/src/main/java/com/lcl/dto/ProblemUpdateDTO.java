@@ -13,6 +13,6 @@ public class ProblemUpdateDTO  implements Serializable {
     private  Long problemId;
     @ApiModelProperty(required = false)
     private String title;
-    @ApiModelProperty(required = false)
-    private Long spaceId;
+//    @ApiModelProperty(required = false)
+//    private Long spaceId;
 }

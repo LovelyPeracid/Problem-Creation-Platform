@@ -12,7 +12,13 @@ lcl:
     access-key-secret: tjIaJm39g0dPsY8Iei0pGuo6QnrL5Q
     endpoint: oss-cn-beijing.aliyuncs.com
   redis:
-    host: localhost
+    host: 101.34.80.19
     port: 6379
     password: "1412613528."
-    database: 0
+    database: 3
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 1
+        max-wait: 100

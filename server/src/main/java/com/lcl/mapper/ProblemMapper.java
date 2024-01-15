@@ -8,6 +8,7 @@ import com.lcl.enumeration.OperationType;
 import com.lcl.vo.ProblemVO;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public interface ProblemMapper {
     List<ProblemVO> getBySpaceId(Long spaceId);
     @AutoFill(OperationType.INSERT)
     @Insert("insert into problem (title,forked_from,created_at,updated_at,space_id,author,gitlab_id) values(#{title},#{forkedFrom},#{createdAt},#{updatedAt},#{spaceId},#{author},#{gitlabId})")
+    @Options(useGeneratedKeys = true, keyProperty = "problemId")
     void save(Problem problem);
     @Select("select *from problem where title=#{title}")
     Problem getByTitle(String title);

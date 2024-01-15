@@ -30,8 +30,7 @@ public class PerformanceMonitoringAspect {
         Object proceed = proceedingJoinPoint.proceed();
 
         Object[] args = proceedingJoinPoint.getArgs();
-        //System.out.println();
-        System.out.println("神");
+        //System.out.println();;
         System.out.println(Arrays.toString(args));
 
         long end = System.currentTimeMillis();

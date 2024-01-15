@@ -33,5 +33,7 @@ public interface SpaceService {
 
     void transference(SpaceUser spaceUser, HttpServletRequest request);
 
+    Long getPrivateSpaceByUserId(Long userId);
+
     // void updaeSpaceUser(SpaceUserUpdateDTO spaceUserUpdateDTO, HttpServletRequest request);
 }
