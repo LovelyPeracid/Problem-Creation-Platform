@@ -47,9 +47,7 @@ public class AuthenticationAspect {
     private ProblemMapper problemMapper;
     @Pointcut("@annotation(com.lcl.annotation.Authenticate)")
     private  void  pt(){};
-    @Pointcut("@annotation(com.lcl.annotation.UserAuth)")
-    private  void  userPt(){};
-    @Pointcut("@annotation(com.lcl.annotation.Admin)")
+
     private void  admin(){};
     @Pointcut("@annotation(com.lcl.annotation.HigherRole)")
     private void  HigherRole(){};

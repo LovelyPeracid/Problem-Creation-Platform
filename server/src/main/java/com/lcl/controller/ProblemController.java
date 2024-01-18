@@ -129,7 +129,6 @@ public class ProblemController {
     }
     @Role(com.lcl.enumeration.Role.visitor)
     @ApiOperation("获取最新的commit信息")
-    @VisitorAuth
     @GetMapping("/{problemId}/space/{spaceId}/laster")
     public  Result<CommitInfoVO> fetchLatest(@PathVariable Long spaceId,@PathVariable Long problemId){
             return problemService.getInfo(problemId);
