@@ -1,6 +1,7 @@
 package com.lcl.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.github.pagehelper.util.StringUtil;
 import com.lcl.constant.GitlabConstant;
 import com.lcl.constant.MessageConstant;
 import com.lcl.constant.ProjectStructConstant;
@@ -15,6 +16,7 @@ import com.lcl.vo.CommitInfoVO;
 import org.gitlab4j.api.CommitsApi;
 import org.gitlab4j.api.GitLabApi;
 import org.gitlab4j.api.GitLabApiException;
+import org.gitlab4j.api.ProjectApi;
 import org.gitlab4j.api.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,30 +31,34 @@ import java.util.List;
  */
 @Service
 public class GitlabServiceImpl implements GitlabService {
-    private  String baseUrl=GitlabConstant.baseUrl;
-    private  String token=GitlabConstant.token;
+    private String baseUrl = GitlabConstant.baseUrl;
+    private String token = GitlabConstant.token;
     @Autowired
     private SpaceMapper spaceMapper;
+
     @Override
     public Long CreateSpace(Space space) {
         try {
-            // 创建一个连接到 GitLab 服务器的 GitLabApi 实例
             GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
             GroupParams group = new GroupParams();
-            group.withName(space.getSpaceName());
-            String id = IdUtil.getSnowflakeNextIdStr();
-            group.withPath(id);
+          //  group.withName(space.getSpaceName());
+            String id=space.getSpaceName();
+            if(space.isType()){
+                id=id+"-personl";
+            }
+            group.withName(id);
+            group.withPath(space.getSpaceName());
             Group newGroup = gitLabApi.getGroupApi().createGroup(group);
-            System.out.println("New group created with ID: " + newGroup.getId());
+            //System.out.println("New group created with ID: " + newGroup.getId());
             return newGroup.getId();
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            throw new  BaseException(MessageConstant.UNKNOWN_ERROR);
+          ///  System.out.println("Error: " + e.getMessage());
+            throw new BaseException(e.getMessage());
         }
     }
 
     @Override
-   // @Transactional
+    // @Transactional
     public Long CreateProblem(Problem problem) {
         try {
             Long problemId = problem.getProblemId();
@@ -69,15 +75,15 @@ public class GitlabServiceImpl implements GitlabService {
             CommitAction action = new CommitAction();
             action.setAction(CommitAction.Action.CREATE);
             action.setFilePath(ProjectStructConstant.ZH_MD);
-            action.setContent(null);
+            action.setContent("此处开始编辑");
             // 提交文件到项目
-            Commit commitMessage = gitLabApi.getCommitsApi().createCommit(problemId, ProjectStructConstant.BASE_BRANCH, "Commit message", null, null, null, action);
+            Commit commitMessage = gitLabApi.getCommitsApi().createCommit(newProject.getId(), ProjectStructConstant.BASE_BRANCH, "Commit message", null, null, null, action);
 
             return newProject.getId();
 
         } catch (Exception e) {
             e.printStackTrace();
-            throw  new BaseException(MessageConstant.UNKNOWN_ERROR);
+            throw new BaseException(MessageConstant.UNKNOWN_ERROR);
         }
     }
 
@@ -87,7 +93,7 @@ public class GitlabServiceImpl implements GitlabService {
     }
 
     @Override
-    public Commit pushContent(Long spaceId, Long problemId, String markdownContent){
+    public Commit pushContent(Long spaceId, Long problemId, String markdownContent) {
         try {
             GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
             CommitAction action = new CommitAction();
@@ -96,14 +102,15 @@ public class GitlabServiceImpl implements GitlabService {
             action.setContent(markdownContent);
             // 提交文件到项目
             Commit commitMessage = gitLabApi.getCommitsApi().createCommit(problemId, ProjectStructConstant.BASE_BRANCH, "Commit message", null, null, null, action);
-            return  commitMessage;
+            return commitMessage;
         } catch (GitLabApiException e) {
             System.out.println("Error: " + e.getMessage());
         }
         return null;
     }
+
     @Override
-    public Commit updateContent(Long spaceId, Long problemId, String markdownContent){
+    public Commit updateContent(Long spaceId, Long problemId, String markdownContent) {
         try {
             // 创建一个GitLabApi实例
             // GitLabApi gitLabApi = new GitLabApi("https://your.gitlab.server", "YOUR_PRIVATE_TOKEN");
@@ -128,20 +135,20 @@ public class GitlabServiceImpl implements GitlabService {
         try {
             GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
             //System.out.println(commitSha);
-            RepositoryFile file = gitLabApi.getRepositoryFileApi().getFile(fileName,projectId,commitSha);
+            RepositoryFile file = gitLabApi.getRepositoryFileApi().getFile(fileName, projectId, commitSha);
             String text = file.getContent();
-            List<String > list =new ArrayList<>();
+            List<String> list = new ArrayList<>();
             list.add(text);
             //file.getEncoding()
             list.add(file.getLastCommitId());
-            return  list;
+            return list;
         } catch (GitLabApiException e) {
-            throw  new BaseException(e.getMessage());
+            throw new BaseException(e.getMessage());
         }
     }
 
-    public void  revert(Long problemId,String commitSha){
-    //  @Override
+    public void revert(Long problemId, String commitSha) {
+        //  @Override
         try {
             // 创建一个GitLabApi实例
             // GitLabApi gitLabApi = new GitLabApi("https://your.gitlab.server", "YOUR_PRIVATE_TOKEN");
@@ -153,7 +160,7 @@ public class GitlabServiceImpl implements GitlabService {
         } catch (GitLabApiException e) {
             System.out.println("Error: " + e.getMessage());
         }
-      //  return null;
+        //  return null;
     }
 
     //@Override
@@ -162,7 +169,7 @@ public class GitlabServiceImpl implements GitlabService {
         List<Commit> commits = gitLabApi.getCommitsApi().getCommits(projectId);
 // 打印每个commit的SHA值
         for (Commit commit : commits) {
-            System.out.println("Commit SHA: " + commit.getId()+"message"+commit.getMessage());
+            System.out.println("Commit SHA: " + commit.getId() + "message" + commit.getMessage());
         }
     }
 
@@ -178,36 +185,37 @@ public class GitlabServiceImpl implements GitlabService {
             // 在指定的 group 下 fork 一个项目
             //Integer groupId = 3;
             Project forkedProject = gitLabApi.getProjectApi().forkProject(originalProject, spaceId);
-            return  forkedProject.getId();
-          //  System.out.println("Forked project ID: " + forkedProject.getId());
+            return forkedProject.getId();
+            //  System.out.println("Forked project ID: " + forkedProject.getId());
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
-           /// throw new BaseException(MessageConstant)
+            /// throw new BaseException(MessageConstant)
             return null;
         }
-    //    return null;
+        //    return null;
     }
+
     @Override
     public List<String> getStruct(Long projectId) {
         try {
-            // 创建一个 GitLabApi 实例来连接到你的 GitLab 服务器
             GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
-
-            // 项目ID
-            //Long  projectId = 40L;
-
-            // 获取项目的根目录
             List<TreeItem> items = gitLabApi.getRepositoryApi().getTree(projectId, null, null);
-
-            // 递归获取所有文件
-            List<String> fileNames=   getFiles(gitLabApi, projectId, items);
-            for (String fileName : fileNames) {
-                System.out.println(fileName);
-            }
-            return  fileNames;
+            List<String> fileNames = getFiles(gitLabApi, projectId, items);
+            return fileNames;
         } catch (Exception e) {
-          //  System.out.println("An error occurred: " + e.getMessage());
+            throw new BaseException(e.getMessage());
+        }
+    }
+
+    @Override
+    public List<String> getStruct(Long projectId, String commitSha) {
+        try {
+            GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+            List<TreeItem> items = gitLabApi.getRepositoryApi().getTree(projectId, null, commitSha);
+            List<String> fileNames = getFiles(gitLabApi, projectId, items);
+            return fileNames;
+        } catch (Exception e) {
             throw new BaseException(e.getMessage());
         }
     }
@@ -227,15 +235,16 @@ public class GitlabServiceImpl implements GitlabService {
             throw new BaseException(e.getMessage());
         }
     }
+
     @Override
-    public  Commit pushContent(List<ActionDTO> actions, Long author, String message,Long problemId){
+    public Commit pushContent(List<ActionDTO> actions, String author, String message, Long problemId) {
         try {
             // 创建一个 GitLabApi 实例来连接到你的 GitLab 服务器
             GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
-            List<CommitAction> list=new ArrayList<>();
+            List<CommitAction> list = new ArrayList<>();
             for (ActionDTO action : actions) {
                 CommitAction addAction = new CommitAction()
-                    //    .withAction(CommitAction.Action.CREATE)
+                        //    .withAction(CommitAction.Action.CREATE)
                         .withFilePath(action.getFilePath())
                         .withContent(action.getContent());
                 switch (action.getAction()) {
@@ -245,10 +254,14 @@ public class GitlabServiceImpl implements GitlabService {
                     case "create":
                         addAction.setAction(CommitAction.Action.CREATE);
                         break;
+                    case "move":
+                        addAction.setPreviousPath(action.getPreviousPath());
+                        addAction.setAction(CommitAction.Action.MOVE);
+                    case "delete":
+                        addAction.setAction(CommitAction.Action.DELETE);
                     default:
                         // 如果没有匹配的action，执行默认的代码
-                        throw  new BaseException("action 操作字段不合法");
-
+                        throw new BaseException("action 操作字段不合法");
                 }
                 list.add(addAction);
             }
@@ -256,7 +269,7 @@ public class GitlabServiceImpl implements GitlabService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
             String formatDateTime = now.format(formatter);
             System.out.println(formatDateTime);
-            String commitMessage="author: "+author+" "+formatter+" "+message;
+            String commitMessage = "author: " + author + " " + formatter + " " + message;
             // 创建一个 CommitPayload 对象来描述提交
             CommitPayload commitPayload = new CommitPayload()
                     .withBranch(GitlabConstant.DEFAULT_BRANCH)  // 提交到哪个分支
@@ -272,7 +285,80 @@ public class GitlabServiceImpl implements GitlabService {
         }
     }
 
-    private static List<String> getFiles(GitLabApi gitLabApi, Long  projectId, List<TreeItem> items) throws Exception {
+    @Override
+    public List<CommitInfoVO> fetchCommits(Long gitlabId) {
+        // GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+        List<CommitInfoVO> list = new ArrayList<>();
+        List<Commit> commits = null;
+        try {
+            GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+            commits = gitLabApi.getCommitsApi().getCommits(40L);
+        } catch (GitLabApiException e) {
+            throw new BaseException(e.getMessage());
+        }
+// 打印每个commit的SHA值
+        for (Commit commit : commits) {
+            //System.out.println(commit);\
+            CommitInfoVO commitInfoVO = new CommitInfoVO();
+            commitInfoVO.setMessage(commit.getMessage());
+            commitInfoVO.setCommitId(commit.getId());
+            commitInfoVO.setUpdatedAt(commit.getCreatedAt());
+            list.add(commitInfoVO);
+        }
+        return list;
+    }
+
+    @Override
+    public void updateProjectTitle(Long projectId,String title) {
+        try {
+            GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+            ProjectApi projectApi = gitLabApi.getProjectApi();
+            Project project = projectApi.getProject(projectId);
+            project.setName(title);
+            Project updatedProject = projectApi.updateProject(project);
+        } catch (GitLabApiException e) {
+            throw  new BaseException(e.getMessage());
+        }
+    }
+
+    @Override
+    public Result getDiff(Long gitlabId) {
+        try {
+            // 创建一个GitLabApi实例
+            GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+            // 获取项目ID和commit SHA
+            // Integer projectId = 40;
+            String commitSha = "5b7dda2d6e1d6b337109a8d2b7c6421506b6a71d";
+
+            // 获取特定commit的diff
+            List<Diff> diffs = gitLabApi.getCommitsApi().getDiff(40L, commitSha);
+
+            // 打印diffs
+            for (Diff diff : diffs) {
+                System.out.println(diff);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return  null;
+    }
+
+    @Override
+    public void updateSpaceTitle(Space space) {
+        try {
+            // 创建一个GitLabApi实例
+            GitLabApi gitLabApi = new GitLabApi(baseUrl, token);
+            Group group = gitLabApi.getGroupApi().getGroup(space.getGitlabId());
+            group.setName(space.getSpaceName());
+            // 更新组
+            gitLabApi.getGroupApi().updateGroup(group);
+
+        } catch (Exception e) {
+            throw  new BaseException(e.getMessage());
+        }
+    }
+
+    private static List<String> getFiles(GitLabApi gitLabApi, Long projectId, List<TreeItem> items) throws Exception {
         List<String> fileNames = new ArrayList<>();
         for (TreeItem item : items) {
             if (item.getType() == TreeItem.Type.BLOB) {

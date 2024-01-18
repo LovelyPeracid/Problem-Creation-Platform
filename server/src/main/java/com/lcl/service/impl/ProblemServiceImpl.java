@@ -2,19 +2,19 @@ package com.lcl.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.util.StringUtil;
 import com.lcl.constant.DeletedConstant;
 import com.lcl.constant.MessageConstant;
 import com.lcl.constant.OperationRecordConstant;
 import com.lcl.context.BaseContext;
 import com.lcl.dto.*;
+import com.lcl.entity.ExtUser;
 import com.lcl.entity.Problem;
 import com.lcl.entity.Space;
 import com.lcl.entity.SpaceProblem;
 import com.lcl.exception.BaseException;
 import com.lcl.exception.NameDuplicationException;
-import com.lcl.mapper.ProblemMapper;
-import com.lcl.mapper.SpaceMapper;
-import com.lcl.mapper.SpaceProblemMapper;
+import com.lcl.mapper.*;
 import com.lcl.result.PageResult;
 import com.lcl.result.Result;
 import com.lcl.service.IpAndAgentService;
@@ -54,6 +54,10 @@ public class ProblemServiceImpl implements ProblemService {
     private SpaceMapper  spaceMapper;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private AuthorsMapper authorsMapper;
     @Override
     public PageResult page(ProblemPageQueryDTO problemPageQueryDTO) {
         PageHelper.startPage(problemPageQueryDTO.getPage(),problemPageQueryDTO.getPageSize());
@@ -91,7 +95,8 @@ public class ProblemServiceImpl implements ProblemService {
         Problem one =new Problem();
         BeanUtils.copyProperties(problemCreateDTO,one);
         one.setSpaceId(spaceId);
-        one.setAuthor(BaseContext.getCurrentId());
+        //one.setAuthor(BaseContext.getCurrentId());
+        //TODO 作者表的更改
         Long id= gitlabService.CreateProblem(one);
         one.setGitlabId(id);
         problemMapper.save(one);
@@ -129,15 +134,16 @@ public class ProblemServiceImpl implements ProblemService {
     @Transactional
     public void update(Long spaceId, ProblemUpdateDTO problemUpdateDTO, HttpServletRequest request) {
 
-
-
         Problem problem = new Problem();
         List<String> Ip = ipAndAgentService.getInfo(request);
         BeanUtils.copyProperties(problemUpdateDTO,problem);
         problem.setSpaceId(spaceId);
         operationRecordService.ProblemOperation(problem,Ip,OperationRecordConstant.UPDATE_PROBLEM);
         problemMapper.update(problem);
-
+        Problem byId = problemMapper.getById(problem.getProblemId());
+        if(StringUtil.isNotEmpty(problemUpdateDTO.getTitle())){
+            gitlabService.updateProjectTitle(byId.getGitlabId() ,problemUpdateDTO.getTitle());
+        }
 
     }
 
@@ -218,7 +224,8 @@ public class ProblemServiceImpl implements ProblemService {
         Long id= gitlabService.fork(byId.getGitlabId(),newSpaceId);
         Problem problem = new Problem();
         problem.setGitlabId(id);
-        problem.setAuthor(BaseContext.getCurrentId());
+        //  problem.setAuthor(BaseContext.getCurrentId());
+        //TODO 作者表的更改
         problem.setTitle(byId.getTitle());
         problem.setIsDeprecated(DeletedConstant.DISDELETED);
         problem.setForkedFrom(problemId);
@@ -250,7 +257,8 @@ public class ProblemServiceImpl implements ProblemService {
        problem.setIsDeprecated(byId.getIsDeprecated());
        problem.setGitlabId(byId.getGitlabId());
        problem.setSpaceId(newSpaceId);
-       problem.setAuthor(byId.getAuthor());
+     //  problem.setAuthor(byId.getAuthor());
+        //TODO 作者表更改
        problem.setForkedFrom(byId.getForkedFrom());
         problemMapper.save(problem);
         operationRecordService.ProblemOperation(problem,Ip,OperationRecordConstant.REFERENCE_PROBLEM);
@@ -264,9 +272,15 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public List<String> getStruct(Long problemId) {
+    public List<String> getStruct(Long problemId,String commitSha) {
         Problem byId = problemMapper.getById(problemId);
-        return  gitlabService.getStruct(byId.getGitlabId());
+//        if(StringUtil.isNotEmpty(commitSha)){
+//            return  gitlabService.getStruct(byId.getGitlabId(),commitSha);
+//        }
+//        else{
+//            return  gitlabService.getStruct(byId.getGitlabId());
+//        }
+        return  gitlabService.getStruct(byId.getGitlabId(),commitSha);
     }
 
     @Override
@@ -275,7 +289,8 @@ public class ProblemServiceImpl implements ProblemService {
         List<String> Ip = ipAndAgentService.getInfo(request);
          Long currentId = BaseContext.getCurrentId();
          Problem byId = problemMapper.getById(problemId);
-         gitlabService.pushContent(list.getActions(),currentId,list.getMessage(),byId.getGitlabId());
+        ExtUser byId1 = userMapper.getById(currentId);
+        gitlabService.pushContent(list.getActions(),byId1.getUsername(),list.getMessage(),byId.getGitlabId());
          problemMapper.update(byId);
         operationRecordService.ProblemOperation(byId,Ip,OperationRecordConstant.UPDATE_PROBLEM_CONTENT);
     }
@@ -284,6 +299,19 @@ public class ProblemServiceImpl implements ProblemService {
     public Result<CommitInfoVO> getInfo(Long problemId) {
         Problem byId = problemMapper.getById(problemId);
         return gitlabService.getInfo(byId.getGitlabId());
+    }
+
+    @Override
+    public List<CommitInfoVO> fetchCommitSha(Long problemId) {
+        Problem byId = problemMapper.getById(problemId);
+      return    gitlabService.fetchCommits(byId.getGitlabId());
+    }
+
+    @Override
+    public Result getDiff(Long problemId)
+    {
+        Long gitlabId = problemMapper.getById(problemId).getGitlabId();
+        return gitlabService.getDiff(gitlabId);
     }
 
 }

@@ -24,9 +24,19 @@ public interface GitlabService {
     Commit updateContent(Long spaceId, Long problemId, String markdownContent);
 
     List<String> getContent(Long projectId, String commitSha, String fileName);
+
     List<String> getStruct(Long projectId);
+    List<String> getStruct(Long projectId, String commitSha);
 
     Result<CommitInfoVO> getInfo(Long problemId);
 
-    Commit pushContent(List<ActionDTO> actions, Long author, String message,Long problemId);
+    Commit pushContent(List<ActionDTO> actions, String author, String message,Long problemId);
+
+    List<CommitInfoVO> fetchCommits(Long gitlabId);
+
+    void updateProjectTitle(Long projectId,String title);
+
+    Result getDiff(Long gitlabId);
+
+    void updateSpaceTitle(Space space);
 }

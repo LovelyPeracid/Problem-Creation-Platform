@@ -19,5 +19,6 @@ public class MessageConstant {
     public static  final  String SPACE_NOT_EXIST="空间不存在";
     public static  final  String ILLEGAL_OPERATION="非法操作";
     public static final String PROBLEM_NOT_EXIST="题目不存在";
+    public static final String EXIST_PERSONAL_SPACE="该用户已经拥有个人空间";
 
 }

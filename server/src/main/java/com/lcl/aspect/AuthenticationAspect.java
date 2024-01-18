@@ -72,10 +72,8 @@ public class AuthenticationAspect {
         Long spaceId=(Long) args[0];
         Space byId = spaceMapper.getById(spaceId);
         Long currentId = BaseContext.getCurrentId();
-  //      ExtUser user= userMapper.getById(currentId);
         if(!Objects.equals(byId.getOwner(), currentId)){
             throw new AuthException(MessageConstant.ACCESS_DENIED);
-          //  return Result.error("权限不足");
         }
         System.out.println(Arrays.toString(args));
         Object proceed = proceedingJoinPoint.proceed();
@@ -101,9 +99,7 @@ public class AuthenticationAspect {
     @Around("UserInOtherSpace()")
     public  Object transfer(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
         Object[] args = proceedingJoinPoint.getArgs();
-        //Long problemId=(Long) args[0];
         Long newSpaceId=(Long) args[1];
-        //Problem byId = problemMapper.getById(problemId);
         SpaceUser userId = spaceUserMapper.getByUserId(newSpaceId, BaseContext.getCurrentId());
         if(userId.getRole()>RoleConstant.USER){
             throw new AuthException(MessageConstant.ACCESS_DENIED);

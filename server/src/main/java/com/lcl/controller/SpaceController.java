@@ -2,10 +2,7 @@ package com.lcl.controller;
 
 import com.aliyun.oss.ServiceException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.lcl.annotation.Admin;
-import com.lcl.annotation.Authenticate;
-import com.lcl.annotation.HigherRole;
-import com.lcl.annotation.UserAuth;
+import com.lcl.annotation.*;
 import com.lcl.constant.MessageConstant;
 import com.lcl.dto.*;
 import com.lcl.entity.OperationRecord;
@@ -29,6 +26,7 @@ import javax.validation.Valid;
 import javax.ws.rs.POST;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author LovelyPeracid
@@ -79,7 +77,7 @@ public class SpaceController {
      * &#064;description  创建
      * &#064;date  2023/12/5 9:55
      */
-
+   // @Role(com.lcl.enumeration.Role.admin)
     @PostMapping("/space")
     @ApiOperation("创建空间")
     public Result createProject(@Valid @RequestBody SpaceCreateDTO space, @ApiIgnore HttpServletRequest request) {
@@ -95,13 +93,14 @@ public class SpaceController {
     }
     @PutMapping("/{id}")
     @Admin
-    @ApiOperation("更新空间")
+    @ApiOperation("更新空间,第一个参数也传的是spaceId 是为了统一鉴权方便 ")
     public  Result update(@PathVariable Long id ,@Valid @RequestBody SpaceUpdateDTO spaceUpdateDTO, @ApiIgnore HttpServletRequest request){
         spaceUpdateDTO.setSpaceId(id);
         spaceService.update(spaceUpdateDTO,request);
         return  Result.success();
     }
-    @Admin
+    //@Admin
+    @Role(com.lcl.enumeration.Role.admin)
     @PostMapping("/{spaceId}/member/{userId}")
     @ApiOperation("添加空间成员")
     public  Result addMember(@PathVariable Long spaceId, Long userId,@RequestBody SpaceAddMemberDTO spaceAddMemberDTO , @ApiIgnore HttpServletRequest request){

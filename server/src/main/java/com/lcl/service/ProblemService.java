@@ -37,7 +37,11 @@ public interface ProblemService {
 
     List<String> getContent(Long projectId, String commitSha, String fileName);
 
-    List<String> getStruct(Long problemId);
+    List<String> getStruct(Long problemId,String commitSha);
 
     Result<CommitInfoVO> getInfo(Long problemId);
+
+    List<CommitInfoVO> fetchCommitSha(Long problemId);
+
+    Result getDiff(Long problemId);
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author LovelyPeracid
@@ -19,5 +20,6 @@ public class ProblemVO implements Serializable {
     private LocalDateTime updatedAt;
     private LocalDateTime createdAt;
     private Long forkedFrom;
-    private Long author;
+    private List<String> authors;
+
 }

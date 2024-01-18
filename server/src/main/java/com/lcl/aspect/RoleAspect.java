@@ -5,15 +5,18 @@ import com.lcl.constant.RoleConstant;
 import com.lcl.context.BaseContext;
 import com.lcl.entity.Space;
 import com.lcl.entity.SpaceUser;
+import com.lcl.enumeration.Role;
 import com.lcl.exception.BaseException;
 import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceUserMapper;
 import com.lcl.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -34,63 +37,36 @@ public class RoleAspect {
     private UserMapper userMapper;
     @Autowired
     private SpaceUserMapper spaceUserMapper;
-    @Pointcut("@annotation(com.lcl.annotation.Admin)")
-    private void  admin(){};
-    @Pointcut("@annotation(com.lcl.annotation.UserAuth)")
-    private void  user(){};
-    @Pointcut("@annotation(com.lcl.annotation.VisitorAuth)")
-    private void  visitor(){};
-    @Around("admin()")
-    public Object admin(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
-        Object[] args = proceedingJoinPoint.getArgs();
-        Long spaceId=(Long) args[0];
-        Space byId = spaceMapper.getById(spaceId);
-        Long currentId = BaseContext.getCurrentId();
-        SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
-        if(byId==null){
-            throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
-        }
-        if(currentUserId.getRole()> RoleConstant.ADMIN||currentUserId.getIsSuspended()){
-            throw  new AuthException(MessageConstant.ACCESS_DENIED);
-        }
-        Object proceed = proceedingJoinPoint.proceed();
-        return  proceed;
+    @Pointcut("@annotation(com.lcl.annotation.Role)")
+    private void role() {
 
     }
-    @Around("visitor()")
-    public Object visitor(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
+    /**
+     * 把枚举类Role改了一点点
+     * @param proceedingJoinPoint
+     * @return
+     * @throws Throwable
+     */
+    @Around("role()")
+    public Object role(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         Object[] args = proceedingJoinPoint.getArgs();
-        Long spaceId=(Long) args[0];
-        Space byId = spaceMapper.getById(spaceId);
+        Role role = getRole(proceedingJoinPoint);
+        Long spaceId = (Long) args[0];
+        Space space= spaceMapper.getById(spaceId);
         Long currentId = BaseContext.getCurrentId();
         SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
-        if(byId==null){
+        if (space == null) {
             throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
         }
-        if(currentUserId.getRole()> RoleConstant.VISITOR||currentUserId.getIsSuspended()){
-            throw  new AuthException(MessageConstant.ACCESS_DENIED);
+        if (currentUserId.getRole() > role.getAccessLevel() || currentUserId.getIsSuspended()) {
+            throw new AuthException(MessageConstant.ACCESS_DENIED);
         }
-        Object proceed = proceedingJoinPoint.proceed();
-        return  proceed;
-
+        return proceedingJoinPoint.proceed();
     }
-
-    @Around("user()")
-    public Object user(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
-        Object[] args = proceedingJoinPoint.getArgs();
-        Long spaceId=(Long) args[0];
-        Space byId = spaceMapper.getById(spaceId);
-        Long currentId = BaseContext.getCurrentId();
-        SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
-        if(byId==null){
-            throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
-        }
-        if(currentUserId.getRole()> RoleConstant.USER||currentUserId.getIsSuspended()){
-            throw  new AuthException(MessageConstant.ACCESS_DENIED);
-        }
-        Object proceed = proceedingJoinPoint.proceed();
-        return  proceed;
-
+    private Role getRole(JoinPoint joinPoint) {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        com.lcl.annotation.Role role = signature.getMethod().getAnnotation(com.lcl.annotation.Role.class);
+        return role.value();
     }
 
 

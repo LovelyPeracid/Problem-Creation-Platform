@@ -19,23 +19,17 @@ import java.util.Arrays;
 public class PerformanceMonitoringAspect {
     //@Pointcut("@an")
     @Pointcut("execution(* com.lcl.*.service.*.*(..))")
-    private  void  pointCut(){};
+    private void pointCut() {
+    }
+    ;
     //public 是别的也可以调用 //可以做一个切入点类
     // @Around("execution(* com.example.demo18.service.*.*(..))")
     @Around("pointCut()")
-    public  Object  recordTime(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+    public Object recordTime(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
         long begin = System.currentTimeMillis();
-
-
         Object proceed = proceedingJoinPoint.proceed();
-
-        Object[] args = proceedingJoinPoint.getArgs();
-        //System.out.println();;
-        System.out.println(Arrays.toString(args));
-
         long end = System.currentTimeMillis();
-
-        log.info(proceedingJoinPoint.getSignature()+"方法耗时：{}ms",end-begin);
-        return  proceed;
+        log.info(proceedingJoinPoint.getSignature() + "方法耗时：{}ms", end - begin);
+        return proceed;
     }
 }

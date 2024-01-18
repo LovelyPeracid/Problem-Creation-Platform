@@ -25,9 +25,7 @@ import java.time.LocalDateTime;
 public class AutoFillAspect {
     @Pointcut("execution(* com.lcl.mapper.*.*(..)) && @annotation(com.lcl.annotation.AutoFill) ")
     public  void autoFillPointCut(){
-
     }
-
     //@Around()
     @Before("autoFillPointCut()")
     public  void   autoFill(JoinPoint joinPoint){
@@ -40,7 +38,6 @@ public class AutoFillAspect {
         }
         Object arg = args[0];
         LocalDateTime now = LocalDateTime.now();
-   //     Long currendId= BaseContext.getCurrentId();
         switch (operationType) {
             case INSERT:{
                 try {

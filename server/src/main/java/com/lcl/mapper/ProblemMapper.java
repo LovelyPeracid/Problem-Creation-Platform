@@ -27,7 +27,7 @@ public interface ProblemMapper {
     @Select("select * from problem where space_id=#{spaceId}")
     List<ProblemVO> getBySpaceId(Long spaceId);
     @AutoFill(OperationType.INSERT)
-    @Insert("insert into problem (title,forked_from,created_at,updated_at,space_id,author,gitlab_id) values(#{title},#{forkedFrom},#{createdAt},#{updatedAt},#{spaceId},#{author},#{gitlabId})")
+    @Insert("insert into problem (title,forked_from,created_at,updated_at,space_id,gitlab_id) values(#{title},#{forkedFrom},#{createdAt},#{updatedAt},#{spaceId},#{gitlabId})")
     @Options(useGeneratedKeys = true, keyProperty = "problemId")
     void save(Problem problem);
     @Select("select *from problem where title=#{title}")

@@ -1,5 +1,6 @@
 package com.lcl.service.impl;
 
+import com.github.pagehelper.util.StringUtil;
 import com.lcl.constant.*;
 import com.lcl.context.BaseContext;
 import com.lcl.dto.SpaceCreateDTO;
@@ -74,14 +75,23 @@ public class SpaceServiceImpl implements SpaceService {
         Space space = new Space();
         BeanUtils.copyProperties(spaceDTO,space);
         space.setIsDeleted(DeletedConstant.DISDELETED);
-
+        Long currentId = BaseContext.getCurrentId();
+        Long id = spaceMapper.getPrivateSpaceByUserId(currentId);
+        if(id!=null){
+            throw new BaseException(MessageConstant.EXIST_PERSONAL_SPACE);
+        }
         Long GitlabId  = gitlabService.CreateSpace(space);
         space.setGitlabId(GitlabId);
+        space.setOwner(currentId);
         spaceMapper.save(space);
         Space byName = spaceMapper.getByName(space.getSpaceName());
+        SpaceUser spaceUser = new SpaceUser();
+        spaceUser.setSpaceId(byName.getSpaceId());
+        spaceUser.setUserId(currentId);
+        spaceUser.setRole(RoleConstant.ROOT);
+        spaceUser.setIsSuspended(false);
+        spaceUserMapper.addMember(spaceUser);
         operationRecordService.SpaceOperation(byName,Ip, OperationRecordConstant.CREATE_SPACE);
-
-       // spaceUserMapper.addMember();
     }
 
     @Override
@@ -101,7 +111,16 @@ public class SpaceServiceImpl implements SpaceService {
         Space space = new Space();
         BeanUtils.copyProperties(spaceUpdateDTO,space);
         List<String> Ip = ipAndAgentService.getInfo(request);
+        Space byName = spaceMapper.getByName(space.getSpaceName());
+        if(byName!=null){
+            throw  new BaseException(MessageConstant.NAME_DUPLICATION);
+        }
         spaceMapper.update(space);
+        Space byId = spaceMapper.getById(space.getSpaceId());
+        space.setGitlabId(byId.getGitlabId());
+        if(StringUtil.isNotEmpty(space.getSpaceName())){
+            gitlabService.updateSpaceTitle(space);
+        }
         operationRecordService.SpaceOperation(space,Ip, OperationRecordConstant.UPDATE_SPACE);
     }
 
