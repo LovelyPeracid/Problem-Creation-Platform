@@ -44,6 +44,7 @@ public class UserController {
         PageResult pageResult=userService.page(userPageQueryDTO);
         return  Result.success(pageResult);
     }
+   // @GetMapping("/space")
     @PostMapping("/logout")
     public Result<String> logout() {
         return Result.success();

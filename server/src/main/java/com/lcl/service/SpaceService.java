@@ -35,5 +35,7 @@ public interface SpaceService {
 
     Long getPrivateSpaceByUserId(Long userId);
 
+    List<SpaceVO> getByUserId(Long userId);
+
     // void updaeSpaceUser(SpaceUserUpdateDTO spaceUserUpdateDTO, HttpServletRequest request);
 }

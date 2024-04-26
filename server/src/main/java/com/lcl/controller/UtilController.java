@@ -27,7 +27,7 @@ import java.util.UUID;
 @RestController
 @Slf4j
 @Api(tags = "图片上传和获取")
-public class UtilController {
+public class  UtilController {
     /**
      *  上传图片
      */

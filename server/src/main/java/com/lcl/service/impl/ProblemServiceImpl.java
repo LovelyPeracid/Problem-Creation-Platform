@@ -95,7 +95,7 @@ public class ProblemServiceImpl implements ProblemService {
         Problem one =new Problem();
         BeanUtils.copyProperties(problemCreateDTO,one);
         one.setSpaceId(spaceId);
-        //one.setAuthor(BaseContext.getCurrentId());
+        one.setAuthor(BaseContext.getCurrentId());
         //TODO 作者表的更改
         Long id= gitlabService.CreateProblem(one);
         one.setGitlabId(id);
@@ -224,7 +224,7 @@ public class ProblemServiceImpl implements ProblemService {
         Long id= gitlabService.fork(byId.getGitlabId(),newSpaceId);
         Problem problem = new Problem();
         problem.setGitlabId(id);
-        //  problem.setAuthor(BaseContext.getCurrentId());
+        problem.setAuthor(BaseContext.getCurrentId());
         //TODO 作者表的更改
         problem.setTitle(byId.getTitle());
         problem.setIsDeprecated(DeletedConstant.DISDELETED);
@@ -257,7 +257,7 @@ public class ProblemServiceImpl implements ProblemService {
        problem.setIsDeprecated(byId.getIsDeprecated());
        problem.setGitlabId(byId.getGitlabId());
        problem.setSpaceId(newSpaceId);
-     //  problem.setAuthor(byId.getAuthor());
+       problem.setAuthor(byId.getAuthor());
         //TODO 作者表更改
        problem.setForkedFrom(byId.getForkedFrom());
         problemMapper.save(problem);

@@ -46,11 +46,18 @@ public class SpaceController {
     }
 
     @GetMapping("/{id}")
-    @ApiOperation("查询id")
+    @ApiOperation("根据id获取信息")
     public Result<SpaceVO> getSpace(@PathVariable Long id) {
       SpaceVO space= spaceService.getById(id);
         return  Result.success(space);
     }
+    @GetMapping(" /users/{userId}/spaces")
+    @ApiOperation("根据用户id获取关联空间")
+    public Result<List<SpaceVO>> getByUserId(@PathVariable Long userId){
+        List<SpaceVO> list=spaceService.getByUserId(userId);
+        return Result.success(list);
+    }
+
     @GetMapping
     @ApiOperation("批量查询")
     public Result<List<SpaceVO>> queryList(@RequestParam List<Long> ids) {

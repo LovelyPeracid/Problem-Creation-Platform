@@ -1,5 +1,6 @@
 package com.lcl.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.util.StringUtil;
 import com.lcl.constant.*;
 import com.lcl.context.BaseContext;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -184,6 +186,20 @@ public class SpaceServiceImpl implements SpaceService {
     @Override
     public Long getPrivateSpaceByUserId(Long userId) {
        return spaceMapper.getPrivateSpaceByUserId(userId);
+    }
+
+    @Override
+    public List<SpaceVO> getByUserId(Long userId) {
+        List<Space> list = spaceUserMapper.getByUserId(userId);
+        List<SpaceVO> spaceVOS = new ArrayList<>();
+        for(Space space :list){
+            SpaceVO spaceVO = new SpaceVO();
+            BeanUtil.copyProperties(space,spaceVO);
+            spaceVOS.add(spaceVO);
+            System.out.println(spaceVO);
+        }
+      //List<Space>
+        return spaceVOS;
     }
 
 //    @Override

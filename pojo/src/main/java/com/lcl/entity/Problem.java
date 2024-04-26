@@ -29,6 +29,6 @@ public class Problem implements Serializable {
     private Long forkedFrom;
     @TableField("gitlab_id")
     private Long gitlabId;
-    //private Long author;
+    private Long author;
 
 }

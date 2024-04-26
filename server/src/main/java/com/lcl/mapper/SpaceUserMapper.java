@@ -1,6 +1,7 @@
 package com.lcl.mapper;
 
 import com.lcl.annotation.AutoFill;
+import com.lcl.entity.Space;
 import com.lcl.entity.SpaceUser;
 import com.lcl.enumeration.OperationType;
 import lombok.Data;
@@ -9,6 +10,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author LovelyPeracid
@@ -24,4 +26,7 @@ public interface SpaceUserMapper  {
     SpaceUser getByUserId(Long spaceId,Long UserId );
     @AutoFill(OperationType.INSERT)
     void update(SpaceUser spaceUser);
+
+    @Select("select space.* from space inner  join user_space on space.space_id=user_space.space_id where user_space.user_id=#{userId}")
+    List<Space> getByUserId(Long userId);
 }
