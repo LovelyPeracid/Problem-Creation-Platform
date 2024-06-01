@@ -1,5 +1,6 @@
 package com.lcl.config;
 
+import com.lcl.handler.RefreshTokenIntercept;
 import com.lcl.interceptor.JwtTokenAdminInterceptor;
 import com.lcl.json.JacksonObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -29,6 +31,8 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
     @Autowired
     private JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
+    @Autowired
+    private RefreshTokenIntercept refreshTokenIntercept;
 
     /**
      * 注册自定义拦截器
@@ -37,12 +41,18 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      */
     protected void addInterceptors(InterceptorRegistry registry) {
         log.info("开始注册自定义拦截器...");
-        registry.addInterceptor(jwtTokenAdminInterceptor)
-               .addPathPatterns("/space/**")
-               .addPathPatterns("/user/**")
-               .addPathPatterns("/problem/**")
-               /// .addPathPatterns("/**");
-        .excludePathPatterns("/doc.html/**");
+        InterceptorRegistration interceptorRegistration = registry.addInterceptor(jwtTokenAdminInterceptor)
+                .addPathPatterns("/space/**")
+                .addPathPatterns("/user/**")
+                .addPathPatterns("/problem/**")
+                /// .addPathPatterns("/**");
+                .excludePathPatterns("/doc.html/**"
+                        ,"/user/login",
+                        "/user/me",
+                        "/user"
+                );
+
+        registry.addInterceptor(refreshTokenIntercept).addPathPatterns("/**");
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.lcl.handler;
 
 import com.lcl.exception.BaseException;
+import com.lcl.exception.BusinessException;
 import com.lcl.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,10 +26,15 @@ public class GlobalExceptionHandler {
         log.error("异常信息：{}", ex.getMessage());
         return Result.error(ex.getMessage());
     }
+    @ExceptionHandler
+    public Result exceptionHandler(BusinessException ex){
+        log.error("异常信息：{}", ex.getMessage());
+        return Result.error(ex.getMessage(), ex.getCode());
+    }
     @ExceptionHandler(AuthException.class)
     public Result exhandle(AuthException au){
         log.error("异常信息：{}",au.getMessage());
-        return  Result.error(au.getMessage());
+        return  Result.error(au.getMessage(),401);
     }
 
 }

@@ -13,6 +13,7 @@ import com.lcl.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -20,6 +21,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.security.auth.message.AuthException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * jwt令牌校验的拦截器
@@ -32,6 +35,8 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
     private JwtProperties jwtProperties;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     /**
      * 校验jwt
      *
@@ -51,9 +56,17 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
         Long id=null;
         System.out.println("拦截器开始");
         try {
-           id= Long.valueOf(request.getHeader("id"));
+            //id= Long.valueOf(request.getHeader("id"));
+            String authorization = request.getHeader("authorization");
+           // Map<String, String> entries =(Map<String, String>)
+            Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries("login:token:"+authorization);
+            if(entries.isEmpty()){
+                throw new  AuthException(MessageConstant.ACCESS_DENIED);
+            }
+            String userId = entries.get("userId").toString();
+            id=Long.valueOf(userId);
             String method = request.getMethod();
-            if(method!= MethodConstant.GET){
+            if(!Objects.equals(method, MethodConstant.GET)){
                 ExtUser byId =  userMapper.getById(id);
                 if(byId==null||byId.getIsSuspended()){
                     throw new  AuthException(MessageConstant.ACCESS_DENIED);
@@ -62,7 +75,7 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
         }
         catch (NumberFormatException | NullPointerException e){
             response.setStatus(401);
-            response.setContentType("application/json");
+            response.setContentType("application/json; charset=UTF-8");
             //response.
             Result<Object> error = Result.error(MessageConstant.HEADER_FORMAT_ERROR);
             String jsonString = JSONObject.toJSONString(error);
@@ -71,7 +84,7 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
         }
         catch (AuthException e){
             response.setStatus(403);
-            response.setContentType("application/json");
+            response.setContentType("application/json; charset=UTF-8");
             Result<Object> error = Result.error(e.getMessage());
             String jsonString = JSONObject.toJSONString(error);
             response.getWriter().write(jsonString);
