@@ -7,10 +7,13 @@ import com.lcl.context.BaseContext;
 import com.lcl.dto.SpaceCreateDTO;
 import com.lcl.dto.SpaceUpdateDTO;
 import com.lcl.dto.SpaceUserUpdateDTO;
+import com.lcl.dto.user.UserDTO;
 import com.lcl.entity.ExtUser;
 import com.lcl.entity.Space;
 import com.lcl.entity.SpaceUser;
+import com.lcl.enumeration.ErrorCode;
 import com.lcl.exception.BaseException;
+import com.lcl.exception.BusinessException;
 import com.lcl.exception.NameDuplicationException;
 import com.lcl.exception.SpaceAddMemberException;
 import com.lcl.mapper.SpaceMapper;
@@ -21,6 +24,7 @@ import com.lcl.service.GitlabService;
 import com.lcl.service.IpAndAgentService;
 import com.lcl.service.OperationRecordService;
 import com.lcl.service.SpaceService;
+import com.lcl.utils.UserHolder;
 import com.lcl.vo.SpaceVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,27 +77,35 @@ public class SpaceServiceImpl implements SpaceService {
         if (one != null) {
             throw  new NameDuplicationException(MessageConstant.NAME_DUPLICATION);
         }
-        //System.out.println(spaceDTO.getOwner());
         Space space = new Space();
         BeanUtils.copyProperties(spaceDTO,space);
         space.setIsDeleted(DeletedConstant.DISDELETED);
-        Long currentId = BaseContext.getCurrentId();
-        Long id = spaceMapper.getPrivateSpaceByUserId(currentId);
-        if(id!=null){
-            throw new BaseException(MessageConstant.EXIST_PERSONAL_SPACE);
-        }
-        Long GitlabId  = gitlabService.CreateSpace(space);
+        //Long currentId = BaseContext.getCurrentId();
+       // UserDTO user = UserHolder.getUser();
+        Long currentId=UserHolder.getUser().getUserId();
+//        Long currentId= UserHolder.getUser().getUserId();
+//        Long id = spaceMapper.getPrivateSpaceByUserId(currentId);
+//        if(id!=null){
+//            throw new BaseException(MessageConstant.EXIST_PERSONAL_SPACE);
+//        }
+        //Long GitlabId  = gitlabService.CreateSpace(space);
+        //TODO 测试
+        Long GitlabId=5L;
         space.setGitlabId(GitlabId);
-        space.setOwner(currentId);
-        spaceMapper.save(space);
-        Space byName = spaceMapper.getByName(space.getSpaceName());
+//        space.setOwner(currentId);
+
+        Boolean save = spaceMapper.save(space);
+        if(save==null||save==false){
+            throw  new BusinessException(ErrorCode.DATABASE_ERROR);
+        }
+      //  Space byName = spaceMapper.getByName(space.getSpaceName());
         SpaceUser spaceUser = new SpaceUser();
-        spaceUser.setSpaceId(byName.getSpaceId());
+        spaceUser.setSpaceId(space.getSpaceId());
         spaceUser.setUserId(currentId);
         spaceUser.setRole(RoleConstant.ROOT);
         spaceUser.setIsSuspended(false);
         spaceUserMapper.addMember(spaceUser);
-        operationRecordService.SpaceOperation(byName,Ip, OperationRecordConstant.CREATE_SPACE);
+        operationRecordService.SpaceOperation(space,Ip, OperationRecordConstant.CREATE_SPACE);
     }
 
     @Override
@@ -130,7 +142,7 @@ public class SpaceServiceImpl implements SpaceService {
     @Transactional
     public void addMember(SpaceUser spaceUser, HttpServletRequest request) {
         List<String> Ip = ipAndAgentService.getInfo(request);
-        SpaceUser one= spaceUserMapper.getByUserId(spaceUser.getSpaceId(),spaceUser.getUserId());
+        SpaceUser one= spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(),spaceUser.getUserId());
         ExtUser byId = userMapper.getById(spaceUser.getUserId());
         if(byId==null||byId.getIsSuspended()){
             throw  new BaseException(MessageConstant.ACCOUNT_LOCKED);
@@ -176,7 +188,7 @@ public class SpaceServiceImpl implements SpaceService {
         currendUser.setUserSpaceId(spaceUser.getUserSpaceId());
         currendUser.setRole(2);
         Space byId = spaceMapper.getById(spaceUser.getSpaceId());
-        byId.setOwner(spaceUser.getUserId());
+        //byId.setOwner(spaceUser.getUserId());
         spaceMapper.update(byId);
         spaceUserMapper.update(currendUser);
         operationRecordService.SpaceUserOperation(spaceUser,Ip,OperationRecordConstant.CHANGE_MEMBER_PERMISSION);

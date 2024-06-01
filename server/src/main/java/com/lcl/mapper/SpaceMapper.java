@@ -6,6 +6,7 @@ import com.lcl.entity.Space;
 import com.lcl.enumeration.OperationType;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,10 +26,11 @@ public interface SpaceMapper {
     @Select("select  * from space where space_name =#{spaceName}")
     Space getByName(String spaceName);
     @AutoFill(OperationType.INSERT)
-    @Insert("insert into  space(space_name, updated_at, created_at, is_deleted, owner, type,gitlab_id)"
-        +"values (#{spaceName},#{updatedAt},#{createdAt},#{isDeleted},#{owner},#{type},#{gitlabId})"
+    @Insert("insert into  space(space_name, updated_at, created_at, is_deleted,gitlab_id)"
+        +"values (#{spaceName},#{updatedAt},#{createdAt},#{isDeleted},#{gitlabId})"
     )
-    void save(Space space);
+    @Options(useGeneratedKeys = true, keyProperty = "spaceId")
+    Boolean save(Space space);
     @AutoFill(OperationType.UPDATE)
     void update(Space space);
     @Select("select space_id from space where owner=#{userId} and type=1")

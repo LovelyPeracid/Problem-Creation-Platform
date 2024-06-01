@@ -22,9 +22,9 @@ public class Space  implements Serializable {
     @TableId(type = AUTO)
     private  Long spaceId;
     private  String spaceName;
-    private boolean type;
-    @TableField("owner")
-    private  Long owner;
+//    private boolean type;
+//    @TableField("owner")
+//    private  Long owner;
     @TableField(value = "is_deleted",typeHandler = BooleanTypeHandler.class)
     private Boolean isDeleted;
     @TableField("updated_at")

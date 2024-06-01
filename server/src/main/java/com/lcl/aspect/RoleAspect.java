@@ -10,6 +10,7 @@ import com.lcl.exception.BaseException;
 import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceUserMapper;
 import com.lcl.mapper.UserMapper;
+import com.lcl.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -53,12 +54,15 @@ public class RoleAspect {
         Role role = getRole(proceedingJoinPoint);
         Long spaceId = (Long) args[0];
         Space space= spaceMapper.getById(spaceId);
-        Long currentId = BaseContext.getCurrentId();
-        SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
+        //Long currentId = BaseContext.getCurrentId();
+        Long currentId= UserHolder.getUser().getUserId();
+        SpaceUser currentUserId = spaceUserMapper.getByUserIdAndSpace(spaceId, currentId);
+        ///SpaceUser userId = spaceUserMapper.getByUserId(spaceId, currentId);/
         if (space == null) {
             throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
         }
-        if (currentUserId.getRole() > role.getAccessLevel() || currentUserId.getIsSuspended()) {
+
+        if(currentUserId==null|| currentUserId.getRole() > role.getAccessLevel() || currentUserId.getIsSuspended()) {
             throw new AuthException(MessageConstant.ACCESS_DENIED);
         }
         return proceedingJoinPoint.proceed();

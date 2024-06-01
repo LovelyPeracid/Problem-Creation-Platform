@@ -7,6 +7,7 @@ import com.lcl.constant.RedisConstants;
 import com.lcl.dto.user.UserDTO;
 import com.lcl.utils.UserHolder;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author LovelyPeracid
  */
+@Component
 public class RefreshTokenIntercept implements HandlerInterceptor {
     private StringRedisTemplate stringRedisTemplate;
 

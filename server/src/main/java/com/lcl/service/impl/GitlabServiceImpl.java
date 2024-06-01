@@ -43,9 +43,10 @@ public class GitlabServiceImpl implements GitlabService {
             GroupParams group = new GroupParams();
           //  group.withName(space.getSpaceName());
             String id=space.getSpaceName();
-            if(space.isType()){
-                id=id+"-personl";
-            }
+            //TODO  space OWNER
+//            if(space.isType()){
+//                id=id+"-personl";
+//            }
             group.withName(id);
             group.withPath(space.getSpaceName());
             Group newGroup = gitLabApi.getGroupApi().createGroup(group);

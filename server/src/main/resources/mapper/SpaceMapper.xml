@@ -8,9 +8,6 @@
             <if test="updatedAt!=null">
                     updated_at=#{updatedAt},
             </if>
-            <if test="owner!=null">
-                    owner=#{owner},
-            </if>
             <if test="isDeleted!=null">
                 is_deleted=#{isDeleted},
             </if>

@@ -70,9 +70,10 @@ public class AuthenticationAspect {
         Long spaceId=(Long) args[0];
         Space byId = spaceMapper.getById(spaceId);
         Long currentId = BaseContext.getCurrentId();
-        if(!Objects.equals(byId.getOwner(), currentId)){
-            throw new AuthException(MessageConstant.ACCESS_DENIED);
-        }
+        //TODO  space OWNER
+//        if(!Objects.equals(byId.getOwner(), currentId)){
+//            throw new AuthException(MessageConstant.ACCESS_DENIED);
+//        }
         System.out.println(Arrays.toString(args));
         Object proceed = proceedingJoinPoint.proceed();
         System.out.println("拦截完成");
@@ -85,8 +86,8 @@ public class AuthenticationAspect {
         Long spaceId=(Long) args[0];
         Long UserId=(Long) args[1];
         Long currentId = BaseContext.getCurrentId();
-        SpaceUser byUserId = spaceUserMapper.getByUserId(spaceId,UserId);
-        SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
+        SpaceUser byUserId = spaceUserMapper.getByUserIdAndSpace(spaceId,UserId);
+        SpaceUser currentUserId = spaceUserMapper.getByUserIdAndSpace(spaceId, currentId);
         if(currentUserId.getRole()>=byUserId.getRole()){
             throw new AuthException(MessageConstant.ACCESS_DENIED);
         }
@@ -98,7 +99,7 @@ public class AuthenticationAspect {
     public  Object transfer(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
         Object[] args = proceedingJoinPoint.getArgs();
         Long newSpaceId=(Long) args[1];
-        SpaceUser userId = spaceUserMapper.getByUserId(newSpaceId, BaseContext.getCurrentId());
+        SpaceUser userId = spaceUserMapper.getByUserIdAndSpace(newSpaceId, BaseContext.getCurrentId());
         if(userId.getRole()>RoleConstant.USER){
             throw new AuthException(MessageConstant.ACCESS_DENIED);
         }

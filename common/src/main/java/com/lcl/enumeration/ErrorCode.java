@@ -12,7 +12,8 @@ public enum ErrorCode {
     FORBIDDEN_ERROR(40300, "禁止访问"),
     SYSTEM_ERROR(50000, "系统内部异常"),
     OPERATION_ERROR(50001, "操作失败"),
-    API_REQUEST_ERROR(50010, "接口调用失败");
+    API_REQUEST_ERROR(50010, "接口调用失败"),
+    DATABASE_ERROR(500012,"数据库访问失败");
 
     private  final  int code;
     private  final String msg;

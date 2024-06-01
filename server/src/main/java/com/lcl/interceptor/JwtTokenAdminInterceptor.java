@@ -1,15 +1,18 @@
 package com.lcl.interceptor;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.lcl.constant.JwtClaimsConstant;
 import com.lcl.constant.MessageConstant;
 import com.lcl.constant.MethodConstant;
 import com.lcl.context.BaseContext;
+import com.lcl.dto.user.UserDTO;
 import com.lcl.entity.ExtUser;
 import com.lcl.mapper.UserMapper;
 import com.lcl.properties.JwtProperties;
 import com.lcl.result.Result;
 import com.lcl.utils.JwtUtil;
+import com.lcl.utils.UserHolder;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +66,8 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
             if(entries.isEmpty()){
                 throw new  AuthException(MessageConstant.ACCESS_DENIED);
             }
+            UserDTO userDTO = BeanUtil.mapToBean(entries, UserDTO.class, true);
+            UserHolder.saveUser(userDTO);
             String userId = entries.get("userId").toString();
             id=Long.valueOf(userId);
             String method = request.getMethod();
@@ -94,7 +99,9 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
              response.setStatus(401);
              return false;
        }
-        BaseContext.setCurrentId(id);
+       // BaseContext.setCurrentId(id);
+//        BeanUtil.mapToBean()
+//        UserHolder.saveUser();
         return true;
 //        if (!(handler instanceof HandlerMethod)) {
 //            //当前拦截到的不是动态方法，直接放行
@@ -125,5 +132,6 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
 
       //  HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
         BaseContext.removeCurrentId();
+        UserHolder.removeUser();
     }
 }

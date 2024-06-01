@@ -21,7 +21,6 @@ public class SpaceUser  implements Serializable {
     private Long userSpaceId;
     private Long userId;
     private Long spaceId;
-    //@EnumValue(Enum)
     private Integer role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String login(UserLoginDTO userLoginDTO) {
         String email = userLoginDTO.getEmail();
-        String passwd = userLoginDTO.getPasswd();
+        String passwd = userLoginDTO.getPassword();
         ExtUser user = userMapper.queryByPasswd(email,passwd);
         if(user==null){
             throw new LoginFailedException(MessageConstant.PASSWORD_ERROR);

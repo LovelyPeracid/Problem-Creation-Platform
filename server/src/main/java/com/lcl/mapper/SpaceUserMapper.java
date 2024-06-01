@@ -22,8 +22,8 @@ public interface SpaceUserMapper  {
    void addMember(SpaceUser spaceUser) ;
 
 
-    @Select("select *from user_space where space_id=#{spaceId} and user_id=#{UserId}")
-    SpaceUser getByUserId(Long spaceId,Long UserId );
+    @Select("select *from user_space where space_id=#{spaceId} and user_id=#{userId}")
+    SpaceUser getByUserIdAndSpace(Long spaceId,Long userId );
     @AutoFill(OperationType.INSERT)
     void update(SpaceUser spaceUser);
 

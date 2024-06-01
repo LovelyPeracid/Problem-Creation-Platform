@@ -37,13 +37,12 @@ import java.util.Objects;
 public class SpaceController {
     @Autowired
     private SpaceService spaceService;
-
-    @GetMapping("/private/{userId}")
-    @ApiOperation("根据用户Id 查询是否拥有个人空间")
-    public Result getPrivateSpace(@PathVariable Long userId){
-       Long id= spaceService.getPrivateSpaceByUserId(userId);
-       return  Result.success(id);
-    }
+//    @GetMapping("/private/{userId}")
+//    @ApiOperation("根据用户Id 查询是否拥有个人空间")
+//    public Result getPrivateSpace(@PathVariable Long userId){
+//       Long id= spaceService.getPrivateSpaceByUserId(userId);
+//       return  Result.success(id);
+//    }
 
     @GetMapping("/{id}")
     @ApiOperation("根据id获取信息")
@@ -84,14 +83,15 @@ public class SpaceController {
      * &#064;description  创建
      * &#064;date  2023/12/5 9:55
      */
-   // @Role(com.lcl.enumeration.Role.admin)
-    @PostMapping("/space")
+//    @Role(com.lcl.enumeration.Role.admin)
+    @PostMapping()
     @ApiOperation("创建空间")
     public Result createProject(@Valid @RequestBody SpaceCreateDTO space, @ApiIgnore HttpServletRequest request) {
         spaceService.save(space,request);
         return Result.success();
     }
-    @Authenticate
+    //@Authenticate
+    @Role(com.lcl.enumeration.Role.root)
     @DeleteMapping("/{id}")
     @ApiOperation("删除空间")
     public  Result delete(@PathVariable Long id,@ApiIgnore HttpServletRequest httpServletRequest){
