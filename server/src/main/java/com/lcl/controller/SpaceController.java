@@ -87,8 +87,8 @@ public class SpaceController {
     @PostMapping()
     @ApiOperation("创建空间")
     public Result createProject(@Valid @RequestBody SpaceCreateDTO space, @ApiIgnore HttpServletRequest request) {
-        spaceService.save(space,request);
-        return Result.success();
+       return spaceService.save(space,request);
+        //return Result.success();
     }
     //@Authenticate
     @Role(com.lcl.enumeration.Role.root)
@@ -108,13 +108,14 @@ public class SpaceController {
     }
     //@Admin
     @Role(com.lcl.enumeration.Role.admin)
-    @PostMapping("/{spaceId}/member/{userId}")
+    @PostMapping("/{spaceId}/member/")
     @ApiOperation("添加空间成员")
-    public  Result addMember(@PathVariable Long spaceId, Long userId,@RequestBody SpaceAddMemberDTO spaceAddMemberDTO , @ApiIgnore HttpServletRequest request){
+    public  Result addMember(@PathVariable Long spaceId,@RequestBody SpaceAddMemberDTO spaceAddMemberDTO , @ApiIgnore HttpServletRequest request){
         SpaceUser spaceUser = new SpaceUser();
         BeanUtils.copyProperties(spaceAddMemberDTO,spaceUser);
         spaceUser.setSpaceId(spaceId);
-        spaceUser.setUserId(userId);
+        spaceUser.setUserId(spaceAddMemberDTO.getUserId());
+        spaceUser.setRole(spaceAddMemberDTO.getRole());
         spaceService.addMember(spaceUser,request);
         return  Result.success();
     }

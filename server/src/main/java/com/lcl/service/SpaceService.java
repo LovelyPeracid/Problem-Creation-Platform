@@ -2,14 +2,11 @@ package com.lcl.service;
 
 import com.lcl.dto.SpaceCreateDTO;
 import com.lcl.dto.SpaceUpdateDTO;
-import com.lcl.dto.SpaceUserUpdateDTO;
-import com.lcl.entity.Space;
 import com.lcl.entity.SpaceUser;
 import com.lcl.result.Result;
 import com.lcl.vo.SpaceVO;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -20,7 +17,7 @@ public interface SpaceService {
 
     Result getByIds(List<Long> ids);
 
-    void save( SpaceCreateDTO space, HttpServletRequest request);
+    Result save(SpaceCreateDTO space, HttpServletRequest request);
 
     void deleteById(Long id, HttpServletRequest httpServletRequest);
 

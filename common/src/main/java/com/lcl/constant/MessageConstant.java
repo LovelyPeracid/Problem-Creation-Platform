@@ -20,5 +20,7 @@ public class MessageConstant {
     public static  final  String ILLEGAL_OPERATION="非法操作";
     public static final String PROBLEM_NOT_EXIST="题目不存在";
     public static final String EXIST_PERSONAL_SPACE="该用户已经拥有个人空间";
+    public static final String ROLE_ERROR="被操作者权限不能比当前用户更高";
+    public static final String REPEATED_SUBMISSION="请求正在处理，请勿重复提交";
 
 }
