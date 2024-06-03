@@ -3,17 +3,17 @@ package com.lcl.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.github.pagehelper.util.StringUtil;
 import com.lcl.constant.*;
-import com.lcl.context.BaseContext;
 import com.lcl.dto.SpaceCreateDTO;
 import com.lcl.dto.SpaceUpdateDTO;
 import com.lcl.entity.ExtUser;
 import com.lcl.entity.Space;
 import com.lcl.entity.SpaceUser;
+import com.lcl.enumeration.AddStatus;
 import com.lcl.enumeration.ErrorCode;
+import com.lcl.enumeration.Role;
 import com.lcl.exception.BaseException;
 import com.lcl.exception.BusinessException;
 import com.lcl.exception.NameDuplicationException;
-import com.lcl.exception.SpaceAddMemberException;
 import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceUserMapper;
 import com.lcl.mapper.UserMapper;
@@ -25,9 +25,14 @@ import com.lcl.service.SpaceService;
 import com.lcl.utils.RedisUtils;
 import com.lcl.utils.UserHolder;
 import com.lcl.vo.SpaceVO;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,7 +58,11 @@ public class SpaceServiceImpl implements SpaceService {
     private UserMapper userMapper;
     @Autowired
     private RedisUtils redisUtils;
+    @Autowired
+    private PlatformTransactionManager platformTransactionManager;
 
+    @Autowired
+    private TransactionDefinition transactionDefinition;
     @Override
     public SpaceVO getById(Long id) {
         Space space = spaceMapper.getById(id);
@@ -72,6 +81,8 @@ public class SpaceServiceImpl implements SpaceService {
     @Override
     @Transactional
     public Result save(SpaceCreateDTO spaceDTO, HttpServletRequest request) {
+
+
         List<String> Ip = ipAndAgentService.getInfo(request);
         Space one = spaceMapper.getByName(spaceDTO.getSpaceName());
         if (one != null) {
@@ -139,9 +150,8 @@ public class SpaceServiceImpl implements SpaceService {
         }
         operationRecordService.SpaceOperation(space, Ip, OperationRecordConstant.UPDATE_SPACE);
     }
-
+    /* 手动提交事务解决*/
     @Override
-    @Transactional
     public void addMember(SpaceUser spaceUser, HttpServletRequest request) {
         List<String> Ip = ipAndAgentService.getInfo(request);
         if (spaceUser.getRole() <= 1) {
@@ -151,42 +161,137 @@ public class SpaceServiceImpl implements SpaceService {
         if (byId == null || byId.getIsSuspended()) {
             throw new BaseException(MessageConstant.ACCOUNT_LOCKED);
         }
-
         SpaceUser one = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
         if (one != null) {
             if (one.getIsSuspended()) {
                 one.setIsSuspended(true);
                 one.setRole(RoleConstant.VISITOR);
-                spaceUserMapper.update(one);
+                //spaceUserMapper.update(one);
+                SpaceService spaceService = (SpaceService) AopContext.currentProxy();
+                spaceService.update(one);
                 operationRecordService.SpaceUserOperation(one, Ip, OperationRecordConstant.ADD_SPACE_MEMBER);
                 return;
             }
-            throw new SpaceAddMemberException(MessageConstant.MEMBER_ALREADY_EXIST);
+            if(one.getStatus()== AddStatus.wait.getStatus()){
+                throw new BusinessException(MessageConstant.WAIT_USER_ACCEPT);
+            }
+            if(one.getStatus()==AddStatus.refuse.getStatus()){
+                throw  new BusinessException(MessageConstant.USER_REFUSE);
+            }
+            if(one.getStatus()==AddStatus.accept.getStatus()){
+                throw  new BusinessException(MessageConstant.MEMBER_ALREADY_EXIST);
+            }
+
         }
         spaceUser.setIsSuspended(DeletedConstant.DISDELETED);
-        //spaceUser.setRole(spaceUser);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        //这里会多次添加
         String key = RedisConstants.SPACE_USER_LOCK + spaceUser.getSpaceId() + ":" + spaceUser.getUserId();
         boolean success = redisUtils.tryLock(key);
-
+        System.out.println("尝试获取锁"+key+Thread.currentThread().getName());
+        System.out.println(success);
         if (!success) {
             throw new BusinessException(MessageConstant.REPEATED_SUBMISSION);
         }
+        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
         try {
+            System.out.println("获取锁成功进入锁内部");
             SpaceUser again = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
             if (again != null) {
+                System.out.println("用户已经存在");
                 throw new BusinessException(MessageConstant.USER_EXITST);
             }
-            spaceUserMapper.addMember(spaceUser);
+            //System.out.println();
+           // spaceUserMapper.addMember(spaceUser);
+            SpaceService spaceService = (SpaceService) AopContext.currentProxy();
+            spaceService.creatMember(spaceUser);
+            System.out.println("用户添加成功");
+            SpaceUser again1 = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
+            System.out.println(again1);
             operationRecordService.SpaceUserOperation(spaceUser, Ip, OperationRecordConstant.ADD_SPACE_MEMBER);
-        } finally {
+            platformTransactionManager.commit(transactionStatus);
+        }
+        catch (Exception e){
+            platformTransactionManager.rollback(transactionStatus);
+            throw  new BusinessException(e.getMessage());
+        }
+        finally {
+            SpaceUser again1 = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
+            System.out.println(again1);
             redisUtils.unlock(key);
         }
+    }
+
+    @Override
+    @Transactional
+    public  void  update(SpaceUser spaceUser){
+        spaceUserMapper.update(spaceUser);
+    }
+
+
+//    @Override
+//    @Transactional
+//    public void addMember(SpaceUser spaceUser, HttpServletRequest request) {
+//        List<String> Ip = ipAndAgentService.getInfo(request);
+//        if (spaceUser.getRole() <= 1) {
+//            throw new BusinessException(MessageConstant.ROLE_ERROR);
+//        }
+//        ExtUser byId = userMapper.getById(spaceUser.getUserId());
+//        if (byId == null || byId.getIsSuspended()) {
+//            throw new BaseException(MessageConstant.ACCOUNT_LOCKED);
+//        }
+//        SpaceUser one = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
+//        if (one != null) {
+//            if (one.getIsSuspended()) {
+//                one.setIsSuspended(true);
+//                one.setRole(RoleConstant.VISITOR);
+//                spaceUserMapper.update(one);
+//                operationRecordService.SpaceUserOperation(one, Ip, OperationRecordConstant.ADD_SPACE_MEMBER);
+//                return;
+//            }
+//            if(one.getStatus()== AddStatus.wait.getStatus()){
+//                throw new BusinessException(MessageConstant.WAIT_USER_ACCEPT);
+//            }
+//            if(one.getStatus()==AddStatus.refuse.getStatus()){
+//                throw  new BusinessException(MessageConstant.USER_REFUSE);
+//            }
+//            if(one.getStatus()==AddStatus.accept.getStatus()){
+//                throw  new BusinessException(MessageConstant.MEMBER_ALREADY_EXIST);
+//            }
+//
+//        }
+//        spaceUser.setIsSuspended(DeletedConstant.DISDELETED);
+//        //这里会多次添加
+//        String key = RedisConstants.SPACE_USER_LOCK + spaceUser.getSpaceId() + ":" + spaceUser.getUserId();
+//        boolean success = redisUtils.tryLock(key);
+//        System.out.println("尝试获取锁"+key+Thread.currentThread().getName());
+//        System.out.println(success);
+//        if (!success) {
+//            throw new BusinessException(MessageConstant.REPEATED_SUBMISSION);
+//        }
+//        try {
+//            System.out.println("获取锁成功进入锁内部");
+//            SpaceUser again = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
+//            if (again != null) {
+//                System.out.println("用户已经存在");
+//                throw new BusinessException(MessageConstant.USER_EXITST);
+//            }
+//            //System.out.println();
+//           // spaceUserMapper.addMember(spaceUser);
+//            SpaceService spaceService = (SpaceService) AopContext.currentProxy();
+//            spaceService.creatMember(spaceUser);
+//            System.out.println("用户添加成功");
+//            SpaceUser again1 = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
+//            System.out.println(again1);
+//            operationRecordService.SpaceUserOperation(spaceUser, Ip, OperationRecordConstant.ADD_SPACE_MEMBER);
+//        } finally {
+//            SpaceUser again1 = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
+//            System.out.println(again1);
+//            redisUtils.unlock(key);
+//        }
+//    }
+    @Override
+    @Transactional(propagation = Propagation.NESTED)
+    public  void creatMember(SpaceUser spaceUser){
+        spaceUserMapper.addMember(spaceUser);
     }
 
     /**
@@ -210,14 +315,21 @@ public class SpaceServiceImpl implements SpaceService {
     @Transactional
     public void transference(SpaceUser spaceUser, HttpServletRequest request) {
         List<String> Ip = ipAndAgentService.getInfo(request);
+        SpaceUser byUserIdAndSpace = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
+        if(byUserIdAndSpace==null||byUserIdAndSpace.getStatus()!=AddStatus.accept.getStatus()){
+            throw new BusinessException(MessageConstant.USER_NOT_EXIST);
+        }
+        if(byUserIdAndSpace.getIsSuspended()){
+            throw  new BusinessException(MessageConstant.USER_IS_BAN);
+        }
         spaceUserMapper.update(spaceUser);
         SpaceUser currendUser = new SpaceUser();
-        currendUser.setUserId(BaseContext.getCurrentId());
-        currendUser.setUserSpaceId(spaceUser.getUserSpaceId());
-        currendUser.setRole(2);
-        Space byId = spaceMapper.getById(spaceUser.getSpaceId());
+        currendUser.setUserId(UserHolder.getUser().getUserId());
+        currendUser.setSpaceId(spaceUser.getSpaceId());
+        currendUser.setRole(Role.admin.getAccessLevel());
+        //Space byId = spaceMapper.getById(spaceUser.getSpaceId());
         //byId.setOwner(spaceUser.getUserId());
-        spaceMapper.update(byId);
+        //spaceMapper.update(byId);
         spaceUserMapper.update(currendUser);
         operationRecordService.SpaceUserOperation(spaceUser, Ip, OperationRecordConstant.CHANGE_MEMBER_PERMISSION);
         operationRecordService.SpaceUserOperation(currendUser, Ip, OperationRecordConstant.TRANSFER_ROOT);
@@ -242,11 +354,18 @@ public class SpaceServiceImpl implements SpaceService {
         return spaceVOS;
     }
 
-//    @Override
-//    public void updaeSpaceUser(SpaceUserUpdateDTO spaceUserUpdateDTO, HttpServletRequest request) {
-//        List<String> Ip = ipAndAgentService.getInfo(request);
-//
-//    }
+    @Override
+    public Result accpet(SpaceUser spaceUser, HttpServletRequest request) {
+        List<String> Ip = ipAndAgentService.getInfo(request);
+        SpaceUser byUserIdAndSpace = spaceUserMapper.getByUserIdAndSpace(spaceUser.getSpaceId(), spaceUser.getUserId());
+        if(byUserIdAndSpace.getStatus()!=0){
+            throw  new BusinessException("已处理请求，无需重复处理");
+        }
+        spaceUser.setUserSpaceId(byUserIdAndSpace.getUserSpaceId());
+        spaceUserMapper.update(spaceUser);
+        operationRecordService.SpaceUserOperation(spaceUser,Ip,OperationRecordConstant.PROCESS_INVITATIONS);
+        return Result.success();
+    }
 
 
 }

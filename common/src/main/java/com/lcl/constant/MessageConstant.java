@@ -22,5 +22,8 @@ public class MessageConstant {
     public static final String EXIST_PERSONAL_SPACE="该用户已经拥有个人空间";
     public static final String ROLE_ERROR="被操作者权限不能比当前用户更高";
     public static final String REPEATED_SUBMISSION="请求正在处理，请勿重复提交";
-
+    public static final String USER_NOT_EXIST="被操作用户不在此空间中";
+    public static final String USER_IS_BAN="被操作用户处于封禁状态";
+    public static final String WAIT_USER_ACCEPT="已发送邀请，等待用户接受";
+    public static final String USER_REFUSE="用户已拒绝";
 }

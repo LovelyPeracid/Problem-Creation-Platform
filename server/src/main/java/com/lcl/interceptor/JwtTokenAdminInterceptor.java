@@ -57,11 +57,8 @@ public class JwtTokenAdminInterceptor implements HandlerInterceptor {
 //        }
         //Long id = Long.valueOf(request.getHeader("id"));
         Long id=null;
-        System.out.println("拦截器开始");
         try {
-            //id= Long.valueOf(request.getHeader("id"));
             String authorization = request.getHeader("authorization");
-           // Map<String, String> entries =(Map<String, String>)
             Map<Object, Object> entries = stringRedisTemplate.opsForHash().entries("login:token:"+authorization);
             if(entries.isEmpty()){
                 throw new  AuthException(MessageConstant.ACCESS_DENIED);

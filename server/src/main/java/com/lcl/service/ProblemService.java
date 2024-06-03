@@ -21,7 +21,7 @@ public interface ProblemService {
 
     List<ProblemVO> getBySpaceId(Long spaceId);
 
-    void save(ProblemCreateDTO problemCreateDTO, Long spaceId, HttpServletRequest request);
+    Result save(ProblemCreateDTO problemCreateDTO, Long spaceId, HttpServletRequest request);
 
     void startOrStop(Long spaceId, ProblemStartOrStopDTO problemStartOrStopDTO, HttpServletRequest request);
 

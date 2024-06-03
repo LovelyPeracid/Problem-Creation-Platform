@@ -12,6 +12,7 @@ import com.lcl.entity.SpaceUser;
 import com.lcl.result.PageResult;
 import com.lcl.result.Result;
 import com.lcl.service.SpaceService;
+import com.lcl.utils.UserHolder;
 import com.lcl.vo.SpaceVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -47,13 +48,14 @@ public class SpaceController {
     @GetMapping("/{id}")
     @ApiOperation("根据id获取信息")
     public Result<SpaceVO> getSpace(@PathVariable Long id) {
-      SpaceVO space= spaceService.getById(id);
-        return  Result.success(space);
+        SpaceVO space = spaceService.getById(id);
+        return Result.success(space);
     }
+
     @GetMapping(" /users/{userId}/spaces")
     @ApiOperation("根据用户id获取关联空间")
-    public Result<List<SpaceVO>> getByUserId(@PathVariable Long userId){
-        List<SpaceVO> list=spaceService.getByUserId(userId);
+    public Result<List<SpaceVO>> getByUserId(@PathVariable Long userId) {
+        List<SpaceVO> list = spaceService.getByUserId(userId);
         return Result.success(list);
     }
 
@@ -75,6 +77,7 @@ public class SpaceController {
     //
     //    return  Result.success(pageResult);
     //}
+
     /**
      * @param space:
      * @param request:
@@ -87,39 +90,43 @@ public class SpaceController {
     @PostMapping()
     @ApiOperation("创建空间")
     public Result createProject(@Valid @RequestBody SpaceCreateDTO space, @ApiIgnore HttpServletRequest request) {
-       return spaceService.save(space,request);
+        return spaceService.save(space, request);
         //return Result.success();
     }
+
     //@Authenticate
     @Role(com.lcl.enumeration.Role.root)
     @DeleteMapping("/{id}")
     @ApiOperation("删除空间")
-    public  Result delete(@PathVariable Long id,@ApiIgnore HttpServletRequest httpServletRequest){
-        spaceService.deleteById(id,httpServletRequest);
-        return  Result.success();
+    public Result delete(@PathVariable Long id, @ApiIgnore HttpServletRequest httpServletRequest) {
+        spaceService.deleteById(id, httpServletRequest);
+        return Result.success();
     }
+
     @PutMapping("/{id}")
-    @Admin
+    @Role(com.lcl.enumeration.Role.admin)
     @ApiOperation("更新空间,第一个参数也传的是spaceId 是为了统一鉴权方便 ")
-    public  Result update(@PathVariable Long id ,@Valid @RequestBody SpaceUpdateDTO spaceUpdateDTO, @ApiIgnore HttpServletRequest request){
+    public Result update(@PathVariable Long id, @Valid @RequestBody SpaceUpdateDTO spaceUpdateDTO, @ApiIgnore HttpServletRequest request) {
         spaceUpdateDTO.setSpaceId(id);
-        spaceService.update(spaceUpdateDTO,request);
-        return  Result.success();
+        spaceService.update(spaceUpdateDTO, request);
+        return Result.success();
     }
+
     //@Admin
     @Role(com.lcl.enumeration.Role.admin)
     @PostMapping("/{spaceId}/member/")
     @ApiOperation("添加空间成员")
-    public  Result addMember(@PathVariable Long spaceId,@RequestBody SpaceAddMemberDTO spaceAddMemberDTO , @ApiIgnore HttpServletRequest request){
+    public Result addMember(@PathVariable Long spaceId, @RequestBody SpaceAddMemberDTO spaceAddMemberDTO, @ApiIgnore HttpServletRequest request) {
         SpaceUser spaceUser = new SpaceUser();
-        BeanUtils.copyProperties(spaceAddMemberDTO,spaceUser);
+        BeanUtils.copyProperties(spaceAddMemberDTO, spaceUser);
         spaceUser.setSpaceId(spaceId);
         spaceUser.setUserId(spaceAddMemberDTO.getUserId());
         spaceUser.setRole(spaceAddMemberDTO.getRole());
-        spaceService.addMember(spaceUser,request);
-        return  Result.success();
+        spaceService.addMember(spaceUser, request);
+        return Result.success();
     }
     //@UserAuth
+
     /**
      * @param spaceId:
      * @param userId:
@@ -131,29 +138,46 @@ public class SpaceController {
      * @date 2023/12/19 10:55
      */
 
-    @Admin
+    @Role(com.lcl.enumeration.Role.admin)
     @HigherRole
-    @PutMapping("/{spaceId}/member/{userId}")
+    @PatchMapping("/{spaceId}/member/{userId}")
     @ApiOperation("更新空间成员")
-    public  Result update(@PathVariable Long spaceId ,Long userId ,@RequestBody SpaceUserUpdateDTO spaceUserUpdateDTO,@ApiIgnore HttpServletRequest request){
-            SpaceUser spaceUser = new SpaceUser();
-            BeanUtils.copyProperties(spaceUserUpdateDTO,spaceUser);
-            spaceUser.setSpaceId(spaceId);
-            spaceUser.setUserId(userId);
-            spaceService.updaeSpaceUser(spaceUser,request);
-            return Result.success();
+    public Result update(@PathVariable Long spaceId, @PathVariable Long userId, @RequestBody SpaceUserUpdateDTO spaceUserUpdateDTO, @ApiIgnore HttpServletRequest request) {
+        SpaceUser spaceUser = new SpaceUser();
+        BeanUtils.copyProperties(spaceUserUpdateDTO, spaceUser);
+        spaceUser.setSpaceId(spaceId);
+        spaceUser.setUserId(userId);
+        spaceService.updaeSpaceUser(spaceUser, request);
+        return Result.success();
 
     }
-    @Authenticate
-    @Admin
-    @PutMapping("/{spaceId}/transference")
+
+    @Role(com.lcl.enumeration.Role.root)
+    //@Admin
+    @PatchMapping("/{spaceId}/transference")
     @ApiOperation("转让空间所有权")
-    public Result transference(@PathVariable Long spaceId,@RequestBody SpaceUserUpdateDTO spaceUserUpdateDTO,@ApiIgnore HttpServletRequest request){
-        //spaceService.transference()
+    public Result transference(@PathVariable Long spaceId, @RequestBody Long userId, @ApiIgnore HttpServletRequest request) {
         SpaceUser spaceUser = new SpaceUser();
-        BeanUtils.copyProperties(spaceUserUpdateDTO,spaceUser);
+        spaceUser.setRole(com.lcl.enumeration.Role.root.getAccessLevel());
+        //BeanUtils.copyProperties(spaceUserUpdateDTO,spaceUser);
         spaceUser.setSpaceId(spaceId);
-        spaceService.transference(spaceUser,request);
+        spaceUser.setUserId(userId);
+        spaceService.transference(spaceUser, request);
         return Result.success();
     }
+
+    @PostMapping("/{spaceId}/accept")
+    @ApiOperation("接受或拒绝邀请")
+    public Result processInvitations(@PathVariable Long spaceId, @RequestBody Boolean flag,@ApiIgnore HttpServletRequest request) {
+        SpaceUser spaceUser = new SpaceUser();
+        if (flag)
+            spaceUser.setStatus(2);
+        else
+            spaceUser.setStatus(1);
+        spaceUser.setSpaceId(spaceId);
+        spaceUser.setUserId(UserHolder.getUser().getUserId());
+       return spaceService.accpet(spaceUser,request);
+        //return null;
+    }
+
 }

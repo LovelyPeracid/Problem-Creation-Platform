@@ -5,6 +5,8 @@ import com.lcl.dto.SpaceUpdateDTO;
 import com.lcl.entity.SpaceUser;
 import com.lcl.result.Result;
 import com.lcl.vo.SpaceVO;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -26,6 +28,12 @@ public interface SpaceService {
 
     void addMember(SpaceUser spaceUser, HttpServletRequest request);
 
+    @Transactional(propagation = Propagation.NESTED)
+    void creatMember(SpaceUser spaceUser);
+
+    @Transactional
+    void  update(SpaceUser spaceUser);
+
     void updaeSpaceUser(SpaceUser spaceUser, HttpServletRequest request);
 
     void transference(SpaceUser spaceUser, HttpServletRequest request);
@@ -33,6 +41,8 @@ public interface SpaceService {
     Long getPrivateSpaceByUserId(Long userId);
 
     List<SpaceVO> getByUserId(Long userId);
+
+    Result accpet(SpaceUser spaceUser, HttpServletRequest request);
 
     // void updaeSpaceUser(SpaceUserUpdateDTO spaceUserUpdateDTO, HttpServletRequest request);
 }

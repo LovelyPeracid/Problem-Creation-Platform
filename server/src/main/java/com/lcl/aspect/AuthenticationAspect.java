@@ -16,6 +16,7 @@ import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceUserMapper;
 import com.lcl.mapper.UserMapper;
 import com.lcl.result.Result;
+import com.lcl.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -63,29 +64,13 @@ public class AuthenticationAspect {
      * @date 2023/12/18 14:33
      */
 
-    @Around("pt()")
-    public  Object  root(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-        System.out.println("开始拦截");
-        Object[] args = proceedingJoinPoint.getArgs();
-        Long spaceId=(Long) args[0];
-        Space byId = spaceMapper.getById(spaceId);
-        Long currentId = BaseContext.getCurrentId();
-        //TODO  space OWNER
-//        if(!Objects.equals(byId.getOwner(), currentId)){
-//            throw new AuthException(MessageConstant.ACCESS_DENIED);
-//        }
-        System.out.println(Arrays.toString(args));
-        Object proceed = proceedingJoinPoint.proceed();
-        System.out.println("拦截完成");
-        return  proceed;
-    }
-
     @Around("HigherRole()")
     public  Object desc(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
         Object[] args = proceedingJoinPoint.getArgs();
         Long spaceId=(Long) args[0];
         Long UserId=(Long) args[1];
-        Long currentId = BaseContext.getCurrentId();
+       // Long currentId = BaseContext.getCurrentId();
+        Long currentId= UserHolder.getUser().getUserId();
         SpaceUser byUserId = spaceUserMapper.getByUserIdAndSpace(spaceId,UserId);
         SpaceUser currentUserId = spaceUserMapper.getByUserIdAndSpace(spaceId, currentId);
         if(currentUserId.getRole()>=byUserId.getRole()){
@@ -99,7 +84,7 @@ public class AuthenticationAspect {
     public  Object transfer(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
         Object[] args = proceedingJoinPoint.getArgs();
         Long newSpaceId=(Long) args[1];
-        SpaceUser userId = spaceUserMapper.getByUserIdAndSpace(newSpaceId, BaseContext.getCurrentId());
+        SpaceUser userId = spaceUserMapper.getByUserIdAndSpace(newSpaceId,UserHolder.getUser().getUserId());
         if(userId.getRole()>RoleConstant.USER){
             throw new AuthException(MessageConstant.ACCESS_DENIED);
         }
@@ -108,31 +93,4 @@ public class AuthenticationAspect {
         return  proceed;
     }
 
-    //@Around()
-//    @Around("admin()")
-//    public Object admin(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
-//        Object[] args = proceedingJoinPoint.getArgs();
-//        Long spaceId=(Long) args[0];
-//        Space byId = spaceMapper.getById(spaceId);
-//        Long currentId = BaseContext.getCurrentId();
-//        SpaceUser currentUserId = spaceUserMapper.getByUserId(spaceId, currentId);
-//        SpaceUserUpdateDTO spaceUpdateDTO =(SpaceUserUpdateDTO) args[1];
-//        if(byId==null){
-//            throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
-//        }
-//        if(currentUserId.getRole()> RoleConstant.ADMIN||currentUserId.getIsSuspended()){
-//            throw  new AuthException(MessageConstant.ACCESS_DENIED);
-//        }
-//
-//        if(spaceUpdateDTO.getRole()!=null){
-//            if(spaceUpdateDTO.getRole()<=currentUserId.getRole()){
-//                throw  new AuthException(MessageConstant.ACCESS_DENIED);
-//            }
-//        }
-//
-//        Object proceed = proceedingJoinPoint.proceed();
-//        System.out.println("拦截完成");
-//        return  proceed;
-//
-//    }
 }

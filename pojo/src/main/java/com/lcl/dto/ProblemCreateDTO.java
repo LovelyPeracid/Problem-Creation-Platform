@@ -15,6 +15,6 @@ public class ProblemCreateDTO  implements Serializable {
     @ApiModelProperty(required = true,value = "题目")
     @Size(max = 64)
     private String title;
-    @ApiModelProperty(required = false,value = "fork")
+    @ApiModelProperty(required = false,value = "fork的题目id")
     private Long forkedFrom;
 }

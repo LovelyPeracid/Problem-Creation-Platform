@@ -36,8 +36,9 @@ public class  UtilController {
         try {
             String originImageName = image.getName();
             String newImageName = createNewFileName(originImageName);
+            System.out.println(image.getName());
             image.transferTo(new File("D:\\dir", newImageName));
-            return Result.success("http://localhost:8080/image" + newImageName);
+            return Result.success("http://localhost:8088/image" + newImageName);
         } catch (IOException e) {
             throw new RuntimeException("upload image exception");
         }

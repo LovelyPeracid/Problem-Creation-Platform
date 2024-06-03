@@ -11,6 +11,10 @@
             <if test="role!=null">
                 role=#{role},
             </if>
+            <if test="status!=null">
+                status=#{status}
+            </if>
+
         </set>
         where user_id =#{userId} and space_id=#{spaceId}
     </update>

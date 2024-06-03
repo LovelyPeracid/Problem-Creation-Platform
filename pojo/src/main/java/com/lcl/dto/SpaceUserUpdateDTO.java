@@ -15,6 +15,6 @@ public class SpaceUserUpdateDTO implements Serializable {
     private Boolean isSuspended;
     @ApiModelProperty(required = false)
     private Integer role;
-//    @ApiModelProperty(required = true)
+//    @ApiModelProperty(required = false,value = "")
 //    private Long userId;
 }

@@ -20,4 +20,5 @@ public class OperationRecordConstant {
     public static final String UPDATE_PROBLEM="更新题目名";
     public static final String TRANSFER_ROOT="转让管理员";
     public static final String UPDATE_PROBLEM_CONTENT="更新题目内容";
+    public static final String PROCESS_INVITATIONS="处理空间邀请";
 }

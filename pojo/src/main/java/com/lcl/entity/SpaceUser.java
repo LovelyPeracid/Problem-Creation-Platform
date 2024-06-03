@@ -22,6 +22,9 @@ public class SpaceUser  implements Serializable {
     private Long userId;
     private Long spaceId;
     private Integer role;//1是最大
+
+    //0是待接受 1是拒绝 2是接受
+    private Integer status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @TableField("is_suspended")

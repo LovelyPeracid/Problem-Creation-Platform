@@ -33,12 +33,13 @@ mybatis:
 
 logging:
   level:
-    org.springframework.jdbc.support.JdbcTransactionManager: debug
+    org.springframework.jdbc.support.JdbcTransactionManager: off
     com:
       lcl:
-        mapper: DEBUG
-        service: info
-        controller: info
+        mapper: off
+        service: off
+        controller: off
+
 
 lcl:
   jwt:

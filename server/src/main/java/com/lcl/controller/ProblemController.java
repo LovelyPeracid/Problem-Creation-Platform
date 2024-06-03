@@ -67,8 +67,8 @@ public class ProblemController {
     @ApiOperation("新建题目")
     @Role(com.lcl.enumeration.Role.visitor)
     public Result save(@PathVariable Long spaceId, @RequestBody ProblemCreateDTO problemCreateDTO, @ApiIgnore HttpServletRequest request) {
-        problemService.save(problemCreateDTO, spaceId, request);
-        return Result.success();
+       return  problemService.save(problemCreateDTO, spaceId, request);
+        //return Result.success();
     }
 
     @DeleteMapping("/space/{spaceId}")

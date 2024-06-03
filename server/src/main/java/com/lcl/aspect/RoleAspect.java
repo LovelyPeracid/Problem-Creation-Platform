@@ -7,6 +7,7 @@ import com.lcl.entity.Space;
 import com.lcl.entity.SpaceUser;
 import com.lcl.enumeration.Role;
 import com.lcl.exception.BaseException;
+import com.lcl.exception.BusinessException;
 import com.lcl.mapper.SpaceMapper;
 import com.lcl.mapper.SpaceUserMapper;
 import com.lcl.mapper.UserMapper;
@@ -61,8 +62,10 @@ public class RoleAspect {
         if (space == null) {
             throw new BaseException(MessageConstant.SPACE_NOT_EXIST);
         }
-
-        if(currentUserId==null|| currentUserId.getRole() > role.getAccessLevel() || currentUserId.getIsSuspended()) {
+        if(currentUserId==null){
+            throw  new BusinessException(MessageConstant.USER_NOT_EXIST);
+        }
+        if( currentUserId.getRole() > role.getAccessLevel() || currentUserId.getIsSuspended()) {
             throw new AuthException(MessageConstant.ACCESS_DENIED);
         }
         return proceedingJoinPoint.proceed();

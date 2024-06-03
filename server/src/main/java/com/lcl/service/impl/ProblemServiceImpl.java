@@ -27,6 +27,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -58,6 +60,11 @@ public class ProblemServiceImpl implements ProblemService {
     private UserMapper userMapper;
     @Autowired
     private AuthorsMapper authorsMapper;
+    @Autowired
+    private PlatformTransactionManager platformTransactionManager;
+    @Autowired
+    private TransactionDefinition transactionDefinition;
+
     @Override
     public PageResult page(ProblemPageQueryDTO problemPageQueryDTO) {
         PageHelper.startPage(problemPageQueryDTO.getPage(),problemPageQueryDTO.getPageSize());
@@ -81,7 +88,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
     @Override
     @Transactional
-    public void save(ProblemCreateDTO problemCreateDTO, Long spaceId, HttpServletRequest request) {
+    public Result save(ProblemCreateDTO problemCreateDTO, Long spaceId, HttpServletRequest request) {
         List<String> Ip = ipAndAgentService.getInfo(request);
         Problem problem = problemMapper.getByTitle(problemCreateDTO.getTitle());
         if(problemCreateDTO.getForkedFrom()!=null){
@@ -110,6 +117,7 @@ public class ProblemServiceImpl implements ProblemService {
         spaceProblemMapper.save(spaceProblem);
         operationRecordService.ProblemOperation(one,Ip, OperationRecordConstant.CREATE_PROBLEM);
 
+        return null;
     }
 
     @Override
